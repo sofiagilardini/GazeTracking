@@ -1,0 +1,149 @@
+/* questionnaire.html */
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gaze vs Click Distance Study - Questionnaire</title>
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .question { margin: 20px auto; padding: 10px; border: 1px solid #ccc; width: 60%; background-color: #f9f9f9; }
+        .option { display: block; padding: 5px; cursor: pointer; }
+        .selected { background-color: lightblue; }
+    </style>
+</head>
+<body>
+    <h1>Gaze vs Click Distance Study</h1>
+    <p id="instructions">Please answer the following questions.</p>
+    
+    <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+    <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+    <div id="questionnaire"></div>
+    
+    <button id="saveButton" onclick="saveResults()">Save</button>
+    <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
+    
+    <script>
+        let results = [];
+        let predictionsVisible = true;
+        let videoFaceVisible = true;
+        let latestGazeX = null;
+        let latestGazeY = null;
+
+        window.onload = function() {
+            if (localStorage.getItem("calibrationDone") !== "true") {
+                window.location.href = "calibration.html";
+                return;
+            }
+
+            webgazer.setRegression('ridge')
+                .saveDataAcrossSessions(true)
+                .setGazeListener(function(data, timestamp) {
+                    if (data) {
+                        latestGazeX = data.x;
+                        latestGazeY = data.y;
+                    }
+                })
+                .begin({ doVideo: true });
+
+            webgazer.showPredictionPoints(true);
+            generateQuestionnaire();
+
+            document.addEventListener('click', function(event) {
+                const clickX = event.clientX;
+                const clickY = event.clientY;
+                
+                if (latestGazeX !== null && latestGazeY !== null) {
+                    const distance = calculateDistance(clickX, clickY, latestGazeX, latestGazeY);
+                    results.push({
+                        clickX, clickY,
+                        gazeX: latestGazeX, gazeY: latestGazeY,
+                        distance: distance.toFixed(2)
+                    });
+                }
+            });
+        };
+
+        function generateQuestionnaire() {
+            const questions = [
+                "What is the capital of France?",
+                "Which planet is known as the Red Planet?",
+                "What is 5 + 3?",
+                "Which ocean is the largest?",
+                "Who wrote '1984'?",
+                "What is the square root of 64?",
+                "What is the chemical symbol for water?",
+                "How many continents are there?",
+                "Who painted the Mona Lisa?",
+                "What is the fastest land animal?"
+            ];
+
+            const options = [
+                ["Paris", "London", "Berlin", "Madrid"],
+                ["Earth", "Mars", "Venus", "Jupiter"],
+                ["6", "7", "8", "9"],
+                ["Pacific", "Atlantic", "Indian", "Arctic"],
+                ["Orwell", "Shakespeare", "Tolkien", "Hemingway"],
+                ["6", "7", "8", "9"],
+                ["H2O", "CO2", "O2", "NaCl"],
+                ["5", "6", "7", "8"],
+                ["Da Vinci", "Van Gogh", "Picasso", "Rembrandt"],
+                ["Cheetah", "Lion", "Horse", "Tiger"]
+            ];
+
+            const questionnaireDiv = document.getElementById("questionnaire");
+            
+            questions.forEach((question, i) => {
+                const questionDiv = document.createElement("div");
+                questionDiv.className = "question";
+                questionDiv.innerHTML = `<p>${question}</p>`;
+
+                options[i].forEach(option => {
+                    const optionDiv = document.createElement("div");
+                    optionDiv.className = "option";
+                    optionDiv.innerText = option;
+                    optionDiv.onclick = function() {
+                        questionDiv.querySelectorAll(".option").forEach(opt => opt.classList.remove("selected"));
+                        optionDiv.classList.add("selected");
+                    };
+                    questionDiv.appendChild(optionDiv);
+                });
+                questionnaireDiv.appendChild(questionDiv);
+            });
+        }
+
+        function calculateDistance(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+        }
+
+        function saveResults() {
+            document.getElementById("instructions").innerText = "Thank you for completing the questionnaire.";
+            document.getElementById("downloadButton").style.display = "inline";
+        }
+
+        function togglePredictions() {
+            predictionsVisible = !predictionsVisible;
+            webgazer.showPredictionPoints(predictionsVisible);
+        }
+
+        function toggleVideoFace() {
+            videoFaceVisible = !videoFaceVisible;
+            webgazer.showVideo(videoFaceVisible);
+            webgazer.showFaceOverlay(videoFaceVisible);
+            webgazer.showFaceFeedbackBox(videoFaceVisible);
+        }
+
+        function downloadResults() {
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'gaze_click_distance_results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

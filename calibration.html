@@ -1,0 +1,89 @@
+/* calibration.html */
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gaze vs Click Distance Study - Calibration</title>
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .calibration-dot { position: absolute; width: 20px; height: 20px; background-color: red; border-radius: 50%; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Gaze vs Click Distance Study</h1>
+    <p id="instructions">Calibration Phase: Click each red dot 5 times.</p>
+    <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+    <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+    <button id="nextButton" style="display: none;" onclick="goToQuestionnaire()">Next</button>
+    
+    <script>
+        let calibrationClicks = {};
+        const calibrationDots = [
+            { x: 100, y: 100 },
+            { x: window.innerWidth - 100, y: 100 },
+            { x: 100, y: window.innerHeight - 100 },
+            { x: window.innerWidth - 100, y: window.innerHeight - 100 },
+            { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        ];
+        let predictionsVisible = true;
+        let videoFaceVisible = true;
+
+        window.onload = function() {
+            webgazer.setRegression('ridge')
+                .saveDataAcrossSessions(true)
+                .begin({ doVideo: true });
+            
+            webgazer.showPredictionPoints(true);
+            setupCalibration();
+        };
+
+        function setupCalibration() {
+            calibrationDots.forEach((dot, index) => {
+                const dotElement = document.createElement('div');
+                dotElement.className = 'calibration-dot';
+                dotElement.style.left = `${dot.x}px`;
+                dotElement.style.top = `${dot.y}px`;
+                dotElement.dataset.index = index;
+                document.body.appendChild(dotElement);
+
+                calibrationClicks[index] = 0;
+
+                dotElement.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    calibrationClicks[index]++;
+                    if (calibrationClicks[index] >= 5) {
+                        this.style.display = 'none';
+                    }
+                    checkCalibrationComplete();
+                });
+            });
+        }
+
+        function checkCalibrationComplete() {
+            const allDotsClickedEnough = Object.values(calibrationClicks).every(count => count >= 5);
+            if (allDotsClickedEnough) {
+                localStorage.setItem("calibrationDone", "true");
+                document.getElementById('nextButton').style.display = 'inline';
+            }
+        }
+
+        function togglePredictions() {
+            predictionsVisible = !predictionsVisible;
+            webgazer.showPredictionPoints(predictionsVisible);
+        }
+
+        function toggleVideoFace() {
+            videoFaceVisible = !videoFaceVisible;
+            webgazer.showVideo(videoFaceVisible);
+            webgazer.showFaceOverlay(videoFaceVisible);
+            webgazer.showFaceFeedbackBox(videoFaceVisible);
+        }
+
+        function goToQuestionnaire() {
+            window.location.href = "questions.html";
+        }
+    </script>
+</body>
+</html>
