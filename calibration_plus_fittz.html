@@ -5,7 +5,11 @@
     <title>Gaze vs Click Distance Study</title>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
         .calibration-dot {
             position: absolute;
             width: 20px;
@@ -16,33 +20,65 @@
             border: 2px solid blue;
             transition: background-color 0.3s ease;
         }
-        #controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; }
-        .target { position: absolute; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; }
-        .inactive { background-color: gray; }
-        .active { background-color: red; }
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .target {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .inactive {
+            background-color: gray;
+        }
+        .active {
+            background-color: red;
+        }
     </style>
 </head>
 <body>
     <h1>Gaze vs Click Distance Study</h1>
     <p id="instructions">Calibration Phase: Click each red dot 5 times.</p>
-    <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
-    <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+    <!-- Controls on the right side -->
+    <div id="controls">
+        <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+        <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+        <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
+    </div>
+
+    <!-- Next Button for Calibration -->
     <button id="nextButton" style="display: none;" onclick="startExperiment()">Start Experiment</button>
-    
+
+    <!-- Experiment area where targets will appear -->
+    <div id="experimentArea"></div>
+
     <script>
+        // -------------------
+        // Global variables
+        // -------------------
         let calibrationClicks = {};
         let predictionsVisible = true;
         let videoFaceVisible = true;
         let experimentStarted = false;
+
         let randomizedOrder = [];
         let activeTargetIndex = 0;
         let targetPositions = [];
+
         let latestGazeX = null;
         let latestGazeY = null;
         let results = [];
         let clickCount = 0;
-        const maxClicks = 40;
+        const maxClicks = 5;
 
+        // Define calibration dots
         const calibrationDots = [
             { x: 100, y: 100 },
             { x: window.innerWidth - 100, y: 100 },
@@ -51,7 +87,11 @@
             { x: window.innerWidth / 2, y: window.innerHeight / 2 }
         ];
 
+        // --------------------------
+        // On window load
+        // --------------------------
         window.onload = function() {
+            // Initialize WebGazer
             webgazer.setRegression('ridge')
                 .saveDataAcrossSessions(true)
                 .setGazeListener(function(data, timestamp) {
@@ -61,11 +101,17 @@
                     }
                 })
                 .begin({ doVideo: true });
-            
+
+            // By default, show predictions
             webgazer.showPredictionPoints(true);
+
+            // Start calibration dots
             setupCalibration();
         };
 
+        // --------------------------
+        // Calibration
+        // --------------------------
         function setupCalibration() {
             calibrationDots.forEach((dot, index) => {
                 const dotElement = document.createElement('div');
@@ -77,11 +123,13 @@
 
                 calibrationClicks[index] = 0;
 
+                // On dot click
                 dotElement.addEventListener('click', function() {
-                    const index = this.dataset.index;
-                    calibrationClicks[index]++;
-                    updateDotColor(this, calibrationClicks[index]);
-                    if (calibrationClicks[index] >= 5) {
+                    const idx = this.dataset.index;
+                    calibrationClicks[idx]++;
+                    updateDotColor(this, calibrationClicks[idx]);
+                    if (calibrationClicks[idx] >= 5) {
+                        // Hide this dot
                         this.style.display = 'none';
                     }
                     checkCalibrationComplete();
@@ -97,35 +145,33 @@
         function checkCalibrationComplete() {
             const allDotsClickedEnough = Object.values(calibrationClicks).every(count => count >= 5);
             if (allDotsClickedEnough) {
+                // Mark calibration done
                 localStorage.setItem("calibrationDone", "true");
+                // Show Start Experiment button
                 document.getElementById('nextButton').style.display = 'inline';
             }
         }
 
-        function togglePredictions() {
-            predictionsVisible = !predictionsVisible;
-            webgazer.showPredictionPoints(predictionsVisible);
-        }
-
-        function toggleVideoFace() {
-            videoFaceVisible = !videoFaceVisible;
-            webgazer.showVideo(videoFaceVisible);
-            webgazer.showFaceOverlay(videoFaceVisible);
-            webgazer.showFaceFeedbackBox(videoFaceVisible);
-        }
-
+        // ----------------------------
+        // Starting the Experiment
+        // ----------------------------
         function startExperiment() {
             if (experimentStarted) return;
             experimentStarted = true;
-            document.body.innerHTML = "<h1>Fitts' Law Experiment</h1><p id='instructions'>Click the red target 40 times.</p>";
+            document.getElementById("instructions").innerText = "Click the red target 40 times.";
             setupExperiment();
         }
 
         function setupExperiment() {
+            // Where targets will appear
+            const experimentArea = document.getElementById("experimentArea");
+            experimentArea.innerHTML = ""; // Clear previous elements
+
+            // Generate target positions in a circle
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
             const radius = 256;
-            
+
             targetPositions = [...Array(11)].map((_, i) => {
                 const angle = (i / 11) * 2 * Math.PI;
                 return {
@@ -133,45 +179,107 @@
                     y: centerY + radius * Math.sin(angle) - 12
                 };
             });
-            
+
+            // Randomize order
             randomizedOrder = [...Array(targetPositions.length).keys()].sort(() => Math.random() - 0.5);
-            
+            activeTargetIndex = 0;
+            clickCount = 0;
+
+            // Create the targets
             targetPositions.forEach((pos, index) => {
                 const target = document.createElement("div");
                 target.className = "target inactive";
                 target.style.left = `${pos.x}px`;
                 target.style.top = `${pos.y}px`;
                 target.dataset.index = index;
-                document.body.appendChild(target);
+                experimentArea.appendChild(target);
             });
-            
+
+            // Activate the first target
             moveActiveTarget();
         }
 
         function moveActiveTarget() {
+            // Deactivate all
             document.querySelectorAll(".target").forEach(target => {
                 target.classList.remove("active");
                 target.classList.add("inactive");
             });
-            
+
+            // Activate the new target
             const newTarget = document.querySelector(`.target[data-index='${randomizedOrder[activeTargetIndex]}']`);
             if (newTarget) {
                 newTarget.classList.remove("inactive");
                 newTarget.classList.add("active");
-                newTarget.onclick = function(event) { recordClick(event, randomizedOrder[activeTargetIndex]); };
+                newTarget.onclick = (event) => recordClick(event, randomizedOrder[activeTargetIndex]);
             }
         }
 
+        // ------------------------------
+        // Recording Clicks & Results
+        // ------------------------------
         function recordClick(event, index) {
             if (!experimentStarted) return;
+
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+
+            // Calculate gaze distance if we have gaze data
+            if (latestGazeX !== null && latestGazeY !== null) {
+                const dist = calculateDistance(clickX, clickY, latestGazeX, latestGazeY);
+                results.push({
+                    clickX, clickY,
+                    gazeX: latestGazeX,
+                    gazeY: latestGazeY,
+                    distance: dist.toFixed(2),
+                    targetIndex: index
+                });
+            }
+
             clickCount++;
-            
+
+            // Move to next target if not done
             if (clickCount < maxClicks) {
                 activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
                 moveActiveTarget();
             } else {
+                // Experiment finished
                 document.getElementById("instructions").innerText = "Experiment complete!";
+                document.getElementById("downloadButton").style.display = "inline";
             }
+        }
+
+        function calculateDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+        }
+
+        // --------------------------------
+        // Toggling Video & Predictions
+        // --------------------------------
+        function toggleVideoFace() {
+            videoFaceVisible = !videoFaceVisible;
+            webgazer.showVideo(videoFaceVisible);
+            webgazer.showFaceOverlay(videoFaceVisible);
+            webgazer.showFaceFeedbackBox(videoFaceVisible);
+        }
+
+        function togglePredictions() {
+            predictionsVisible = !predictionsVisible;
+            webgazer.showPredictionPoints(predictionsVisible);
+        }
+
+        // ------------------------------
+        // Downloading Results
+        // ------------------------------
+        function downloadResults() {
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'fitts_law_experiment_results.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
     </script>
 </body>
