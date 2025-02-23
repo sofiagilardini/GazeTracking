@@ -25,21 +25,6 @@
             display: none;
         }
 
-        /* Calibration dot styling */
-        .calibration-dot {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            cursor: pointer;
-            background-color: red;
-            border: 2px solid blue;
-            transition: background-color 0.3s ease, transform 0.2s;
-        }
-        .calibration-dot:hover {
-            transform: scale(1.1);
-        }
-
         /* Controls on the top-right corner */
         #controls {
             position: absolute;
@@ -72,29 +57,62 @@
             background-color: #43a047 !important;
         }
 
-        /* Target circles for the experiment */
-        .target {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
+        /* Start page - consent form, BEFORE camera request */
+        #startPage {
+            display: block;
+            max-width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            color: #333;
+            text-align: left;
+        }
+        #startPage h2 {
+            margin-top: 0;
+            font-weight: 500;
+        }
+        #startPage button {
+            background-color: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s;
+            transition: background-color 0.2s ease;
+            margin-top: 20px;
         }
-        .inactive {
-            background-color: gray;
+        #startPage button:hover {
+            background-color: #1976d2;
         }
-        .active {
-            background-color: red;
-        }
-        .target:hover {
-            transform: scale(1.1);
+        #participantName {
+            display: block;
+            margin-top: 10px;
+            padding: 8px;
+            width: 80%;
+            max-width: 300px;
+            font-size: 14px;
         }
 
-        /* Container used during calibration */
+        /* Calibration page styling */
         #calibrationContainer {
+            display: none; /* Hidden until we start calibration */
             margin-top: 80px;
             color: #333;
+        }
+        .calibration-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: red;
+            border: 2px solid blue;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .calibration-dot:hover {
+            transform: scale(1.1);
         }
         #calibrationContainer h2 {
             font-weight: 500;
@@ -141,6 +159,23 @@
             width: 100%;
             height: 100vh;
         }
+        .target {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .inactive {
+            background-color: gray;
+        }
+        .active {
+            background-color: red;
+        }
+        .target:hover {
+            transform: scale(1.1);
+        }
 
         /* The experiment counter in the center */
         #experimentCounter {
@@ -166,7 +201,22 @@
         <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
     </div>
 
-    <!-- We remove the <h1> so there's no main title to cause scrolling -->
+    <!-- Start page - consent form, BEFORE camera request -->
+    <div id="startPage">
+        <h2>Consent Form</h2>
+        <p>
+            Thank you for participating in this study. This experiment will track your eye gaze using your camera.
+            No video data is stored; only gaze coordinates are recorded.
+            By clicking "I consent," you agree to let this application request camera access.
+        </p>
+        <p>
+            Please ensure you are in a well-lit area and that your face is visible to the camera.
+            After consenting, you will be asked to calibrate your gaze.
+        </p>
+        <label for="participantName">Please enter your name:</label>
+        <input type="text" id="participantName" placeholder="John Doe" />
+        <button onclick="requestCameraAccess()">I Consent</button>
+    </div>
 
     <!-- Container for calibration -->
     <div id="calibrationContainer"></div>
@@ -179,26 +229,7 @@
     <div id="experimentCounter"></div>
 
     <script>
-        // -------------------
-        // Global variables
-        // -------------------
-        let calibrationClicks = {};
-        let predictionsVisible = true;
-        let videoFaceVisible = true;
-        let experimentStarted = false;
-
-        let randomizedOrder = [];
-        let activeTargetIndex = 0;
-        let targetPositions = [];
-
-        let latestGazeX = null;
-        let latestGazeY = null;
-        let results = [];
-        let clickCount = 0;
-        const maxClicks = 5;
-
-        // Define calibration dots
-        const calibrationDots = [
+        let calibrationDots = [
             { x: 100, y: 100 },
             { x: window.innerWidth - 100, y: 100 },
             { x: 100, y: window.innerHeight - 100 },
@@ -206,11 +237,40 @@
             { x: window.innerWidth / 2, y: window.innerHeight / 2 }
         ];
 
-        // --------------------------
-        // On window load
-        // --------------------------
+        let calibrationClicks = {};
+        let predictionsVisible = true;
+        let videoFaceVisible = true;
+        let experimentStarted = false;
+        let randomizedOrder = [];
+        let activeTargetIndex = 0;
+        let targetPositions = [];
+        let latestGazeX = null;
+        let latestGazeY = null;
+        let results = [];
+        let clickCount = 0;
+        const maxClicks = 5;
+        let participantName = "anonymous";
+
+        // Wait for user to consent.
         window.onload = function() {
-            // Initialize WebGazer
+            // Hide calibration & instructions by default.
+            document.getElementById('calibrationContainer').style.display = 'none';
+            document.getElementById('instructionsPage').style.display = 'none';
+            document.getElementById('experimentArea').style.display = 'none';
+            document.getElementById('experimentCounter').style.display = 'none';
+        };
+
+        // Step 1: request camera permission, but do not show calibration yet.
+        function requestCameraAccess() {
+            // Grab participant name
+            const nameInput = document.getElementById('participantName');
+            if (nameInput.value.trim() !== "") {
+                participantName = nameInput.value.trim().replace(/\s+/g, '_');
+            } else {
+                participantName = "anonymous";
+            }
+
+            // This function calls webgazer.begin but won't show calibration until user grants permission.
             webgazer.setRegression('ridge')
                 .saveDataAcrossSessions(true)
                 .setGazeListener(function(data, timestamp) {
@@ -219,22 +279,30 @@
                         latestGazeY = data.y;
                     }
                 })
-                .begin({ doVideo: true });
-
-            // By default, show predictions
-            webgazer.showPredictionPoints(true);
-
-            // Start calibration dots
-            setupCalibration();
-        };
+                .begin({ doVideo: true })
+                .then(() => {
+                    console.log("Camera access granted.");
+                    // Once camera access is granted, hide start page.
+                    document.getElementById('startPage').style.display = 'none';
+                    webgazer.showPredictionPoints(true);
+                    // Then show calibration.
+                    setupCalibration();
+                })
+                .catch(err => {
+                    console.error("Camera access denied or error:", err);
+                    alert("Camera permission is required to proceed.");
+                });
+        }
 
         // --------------------------
         // Calibration
         // --------------------------
         function setupCalibration() {
             const calibrationContainer = document.getElementById('calibrationContainer');
+            calibrationContainer.style.display = 'block';
+            calibrationContainer.innerHTML = '';
 
-            // Show instructions about calibration
+            // Add heading
             const calibrationHeader = document.createElement('h2');
             calibrationHeader.innerText = 'Calibration Phase';
             calibrationContainer.appendChild(calibrationHeader);
@@ -243,8 +311,8 @@
             calibrationMsg.innerText = 'Click each red dot 5 times to calibrate.';
             calibrationContainer.appendChild(calibrationMsg);
 
-            // Place calibration dots
             calibrationDots.forEach((dot, index) => {
+                calibrationClicks[index] = 0;
                 const dotElement = document.createElement('div');
                 dotElement.className = 'calibration-dot';
                 dotElement.style.left = `${dot.x}px`;
@@ -252,15 +320,11 @@
                 dotElement.dataset.index = index;
                 document.body.appendChild(dotElement);
 
-                calibrationClicks[index] = 0;
-
-                // On dot click
                 dotElement.addEventListener('click', function() {
                     const idx = this.dataset.index;
                     calibrationClicks[idx]++;
                     updateDotColor(this, calibrationClicks[idx]);
                     if (calibrationClicks[idx] >= 5) {
-                        // Hide this dot
                         this.style.display = 'none';
                     }
                     checkCalibrationComplete();
@@ -276,7 +340,6 @@
         function checkCalibrationComplete() {
             const allDotsClickedEnough = Object.values(calibrationClicks).every(count => count >= 5);
             if (allDotsClickedEnough) {
-                // Mark calibration done
                 localStorage.setItem("calibrationDone", "true");
                 showInstructionsPage();
             }
@@ -292,8 +355,6 @@
             // Show the instructions page
             const instructionsPage = document.getElementById('instructionsPage');
             instructionsPage.style.display = 'block';
-
-            // Add some instructions text
             instructionsPage.innerHTML = `
                 <h2>Instructions</h2>
                 <p>Please read these instructions carefully before proceeding.</p>
@@ -314,10 +375,7 @@
             if (experimentStarted) return;
             experimentStarted = true;
 
-            // Hide the instructions page
             document.getElementById('instructionsPage').style.display = 'none';
-
-            // Show experiment area and counter
             document.getElementById('experimentArea').style.display = 'block';
             document.getElementById('experimentCounter').style.display = 'block';
 
@@ -325,11 +383,9 @@
         }
 
         function setupExperiment() {
-            // Where targets will appear
             const experimentArea = document.getElementById("experimentArea");
-            experimentArea.innerHTML = ""; // Clear previous elements
+            experimentArea.innerHTML = "";
 
-            // Generate target positions in a circle
             const centerX = window.innerWidth / 2;
             const centerY = window.innerHeight / 2;
             const radius = 256;
@@ -342,12 +398,10 @@
                 };
             });
 
-            // Randomize order
             randomizedOrder = [...Array(targetPositions.length).keys()].sort(() => Math.random() - 0.5);
             activeTargetIndex = 0;
             clickCount = 0;
 
-            // Create the targets
             targetPositions.forEach((pos, index) => {
                 const target = document.createElement("div");
                 target.className = "target inactive";
@@ -357,12 +411,10 @@
                 experimentArea.appendChild(target);
             });
 
-            // Activate the first target
             moveActiveTarget();
             updateCounter();
         }
 
-        // Move the active target
         function moveActiveTarget() {
             document.querySelectorAll(".target").forEach(target => {
                 target.classList.remove("active");
@@ -377,32 +429,24 @@
             }
         }
 
-        // ------------------------------
-        // Recording Clicks & Results
-        // ------------------------------
         function recordClick(event, index) {
             if (!experimentStarted) return;
 
-            // Ensure the user truly clicked inside the active target
             const activeTarget = document.querySelector('.target.active');
             if (!activeTarget) return;
 
-            // Let's confirm the click is within the circle radius
             const rect = activeTarget.getBoundingClientRect();
             const targetCenterX = rect.left + rect.width / 2;
             const targetCenterY = rect.top + rect.height / 2;
             const distanceToTarget = calculateDistance(event.clientX, event.clientY, targetCenterX, targetCenterY);
 
-            // We'll assume a radius ~12 (matching half the .target width)
             if (distanceToTarget > 12) {
-                // User didn't click the correct target, do nothing
                 return;
             }
 
             const clickX = event.clientX;
             const clickY = event.clientY;
 
-            // Calculate gaze distance if we have gaze data
             if (latestGazeX !== null && latestGazeY !== null) {
                 const dist = calculateDistance(clickX, clickY, latestGazeX, latestGazeY);
                 results.push({
@@ -418,20 +462,16 @@
             updateCounter();
 
             if (clickCount < maxClicks) {
-                // Move to next target
                 activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
                 moveActiveTarget();
             } else {
-                // Done
                 document.getElementById("experimentCounter").innerText = "Experiment complete!";
                 document.getElementById("downloadButton").style.display = "inline";
             }
         }
 
-        // Show how many clicks are left
         function updateCounter() {
             const counter = document.getElementById("experimentCounter");
-            const remaining = maxClicks - clickCount;
             counter.innerText = `${clickCount} / ${maxClicks} Clicks`;
         }
 
@@ -439,9 +479,6 @@
             return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
         }
 
-        // --------------------------------
-        // Toggling Video & Predictions
-        // --------------------------------
         function toggleVideoFace() {
             videoFaceVisible = !videoFaceVisible;
             webgazer.showVideo(videoFaceVisible);
@@ -454,21 +491,19 @@
             webgazer.showPredictionPoints(predictionsVisible);
         }
 
-        // ------------------------------
-        // Downloading Results
-        // ------------------------------
         function downloadResults() {
-            console.log('Download button clicked');
+            const fileName = `fitts_law_experiment_results_${participantName}.json`;
             const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'fitts_law_experiment_results.json';
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-            console.log('Download initiated');
         }
+
+        console.log("Script loaded, waiting for user to consent...");
     </script>
 </body>
 </html>
