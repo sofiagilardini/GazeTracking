@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Gaze vs Click Distance Study</title>
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
@@ -41,23 +41,41 @@
         .active {
             background-color: red;
         }
+        /* For the instructions page and the experiment counter */
+        #instructionsPage {
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: left;
+        }
+        #experimentCounter {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
-    <h1>Gaze vs Click Distance Study</h1>
-    <p id="instructions">Calibration Phase: Click each red dot 5 times.</p>
-    <!-- Controls on the right side -->
+    <!-- The controls always in top-right corner -->
     <div id="controls">
         <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
         <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
         <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
     </div>
 
-    <!-- Next Button for Calibration -->
-    <button id="nextButton" style="display: none;" onclick="startExperiment()">Start Experiment</button>
+    <!-- We'll show calibration screen first, then instructions page, then experiment -->
 
-    <!-- Experiment area where targets will appear -->
-    <div id="experimentArea"></div>
+    <!-- Container for calibration dots -->
+    <div id="calibrationContainer"></div>
+
+    <!-- Container for instructions page -->
+    <div id="instructionsPage" style="display: none;"></div>
+
+    <!-- Container for the experiment -->
+    <div id="experimentArea" style="display: none;"></div>
+    <div id="experimentCounter" style="display: none;"></div>
 
     <script>
         // -------------------
@@ -113,6 +131,18 @@
         // Calibration
         // --------------------------
         function setupCalibration() {
+            const calibrationContainer = document.getElementById('calibrationContainer');
+
+            // Show instructions about calibration
+            const calibrationHeader = document.createElement('h2');
+            calibrationHeader.innerText = 'Calibration Phase';
+            calibrationContainer.appendChild(calibrationHeader);
+
+            const calibrationMsg = document.createElement('p');
+            calibrationMsg.innerText = 'Click each red dot 5 times to calibrate.';
+            calibrationContainer.appendChild(calibrationMsg);
+
+            // Place calibration dots
             calibrationDots.forEach((dot, index) => {
                 const dotElement = document.createElement('div');
                 dotElement.className = 'calibration-dot';
@@ -147,9 +177,33 @@
             if (allDotsClickedEnough) {
                 // Mark calibration done
                 localStorage.setItem("calibrationDone", "true");
-                // Show Start Experiment button
-                document.getElementById('nextButton').style.display = 'inline';
+                showInstructionsPage();
             }
+        }
+
+        // ----------------------------
+        // Show Instructions Page
+        // ----------------------------
+        function showInstructionsPage() {
+            // Hide calibration container
+            document.getElementById('calibrationContainer').style.display = 'none';
+
+            // Show the instructions page
+            const instructionsPage = document.getElementById('instructionsPage');
+            instructionsPage.style.display = 'block';
+
+            // Add some instructions text
+            instructionsPage.innerHTML = `
+                <h2>Instructions</h2>
+                <p>Please read these instructions carefully before proceeding.</p>
+                <ul>
+                    <li>You will see multiple circles arranged in a circle.</li>
+                    <li>One circle will be red, the rest are grey.</li>
+                    <li>Click on the red circle until you have done so ${maxClicks} times.</li>
+                    <li>You may toggle the video & face features or the gaze predictions using the buttons in the top-right corner at any time.</li>
+                </ul>
+                <button onclick="startExperiment()">Next</button>
+            `;
         }
 
         // ----------------------------
@@ -158,7 +212,14 @@
         function startExperiment() {
             if (experimentStarted) return;
             experimentStarted = true;
-            document.getElementById("instructions").innerText = "Click the red target 40 times.";
+
+            // Hide the instructions page
+            document.getElementById('instructionsPage').style.display = 'none';
+
+            // Show experiment area and counter
+            document.getElementById('experimentArea').style.display = 'block';
+            document.getElementById('experimentCounter').style.display = 'block';
+
             setupExperiment();
         }
 
@@ -197,16 +258,16 @@
 
             // Activate the first target
             moveActiveTarget();
+            updateCounter();
         }
 
+        // Move the active target
         function moveActiveTarget() {
-            // Deactivate all
             document.querySelectorAll(".target").forEach(target => {
                 target.classList.remove("active");
                 target.classList.add("inactive");
             });
 
-            // Activate the new target
             const newTarget = document.querySelector(`.target[data-index='${randomizedOrder[activeTargetIndex]}']`);
             if (newTarget) {
                 newTarget.classList.remove("inactive");
@@ -237,16 +298,24 @@
             }
 
             clickCount++;
+            updateCounter();
 
-            // Move to next target if not done
             if (clickCount < maxClicks) {
+                // Move to next target
                 activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
                 moveActiveTarget();
             } else {
-                // Experiment finished
-                document.getElementById("instructions").innerText = "Experiment complete!";
+                // Done
+                document.getElementById("experimentCounter").innerText = "Experiment complete!";
                 document.getElementById("downloadButton").style.display = "inline";
             }
+        }
+
+        // Show how many clicks are left
+        function updateCounter() {
+            const counter = document.getElementById("experimentCounter");
+            const remaining = maxClicks - clickCount;
+            counter.innerText = `${clickCount} / ${maxClicks} Clicks`;
         }
 
         function calculateDistance(x1, y1, x2, y2) {
