@@ -3,13 +3,29 @@
 <head>
     <meta charset="UTF-8" />
     <title>Gaze vs Click Distance Study</title>
+    <!-- Use a more modern, clean Google Font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
     <style>
+        /* Overall page styling */
         body {
-            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
             text-align: center;
-            margin-top: 50px;
+            /* A subtle gradient background for aesthetics */
+            background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 100%);
+            min-height: 100vh;
+            overflow: hidden; /* Avoid scrolling */
         }
+
+        /* Remove default h1 from the experiment page (no title) */
+        h1 {
+            display: none;
+        }
+
+        /* Calibration dot styling */
         .calibration-dot {
             position: absolute;
             width: 20px;
@@ -18,8 +34,13 @@
             cursor: pointer;
             background-color: red;
             border: 2px solid blue;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, transform 0.2s;
         }
+        .calibration-dot:hover {
+            transform: scale(1.1);
+        }
+
+        /* Controls on the top-right corner */
         #controls {
             position: absolute;
             top: 10px;
@@ -27,13 +48,38 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
+            z-index: 9999; /* Ensure it's above experiment area */
         }
+        #controls button {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            color: #333;
+            font-weight: 500;
+        }
+        #controls button:hover {
+            background-color: #f5f5f5;
+        }
+        /* Make sure the download button text is visible */
+        #downloadButton {
+            background-color: #4caf50 !important;
+            color: #fff !important;
+        }
+        #downloadButton:hover {
+            background-color: #43a047 !important;
+        }
+
+        /* Target circles for the experiment */
         .target {
             position: absolute;
             width: 24px;
             height: 24px;
             border-radius: 50%;
             cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
         }
         .inactive {
             background-color: gray;
@@ -41,19 +87,74 @@
         .active {
             background-color: red;
         }
-        /* For the instructions page and the experiment counter */
+        .target:hover {
+            transform: scale(1.1);
+        }
+
+        /* Container used during calibration */
+        #calibrationContainer {
+            margin-top: 80px;
+            color: #333;
+        }
+        #calibrationContainer h2 {
+            font-weight: 500;
+        }
+
+        /* Instructions page styling */
         #instructionsPage {
+            display: none;
             max-width: 600px;
             margin: 50px auto;
             text-align: left;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            color: #333;
         }
+        #instructionsPage h2 {
+            margin-top: 0;
+            font-weight: 500;
+        }
+        #instructionsPage ul {
+            margin-left: 20px;
+        }
+        #instructionsPage button {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #ff4081;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #instructionsPage button:hover {
+            background-color: #e73370;
+        }
+
+        /* Experiment area styling */
+        #experimentArea {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* The experiment counter in the center */
         #experimentCounter {
+            display: none;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             font-size: 24px;
             color: #333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
     </style>
 </head>
@@ -65,17 +166,17 @@
         <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
     </div>
 
-    <!-- We'll show calibration screen first, then instructions page, then experiment -->
+    <!-- We remove the <h1> so there's no main title to cause scrolling -->
 
-    <!-- Container for calibration dots -->
+    <!-- Container for calibration -->
     <div id="calibrationContainer"></div>
 
     <!-- Container for instructions page -->
-    <div id="instructionsPage" style="display: none;"></div>
+    <div id="instructionsPage"></div>
 
     <!-- Container for the experiment -->
-    <div id="experimentArea" style="display: none;"></div>
-    <div id="experimentCounter" style="display: none;"></div>
+    <div id="experimentArea"></div>
+    <div id="experimentCounter"></div>
 
     <script>
         // -------------------
@@ -282,6 +383,22 @@
         function recordClick(event, index) {
             if (!experimentStarted) return;
 
+            // Ensure the user truly clicked inside the active target
+            const activeTarget = document.querySelector('.target.active');
+            if (!activeTarget) return;
+
+            // Let's confirm the click is within the circle radius
+            const rect = activeTarget.getBoundingClientRect();
+            const targetCenterX = rect.left + rect.width / 2;
+            const targetCenterY = rect.top + rect.height / 2;
+            const distanceToTarget = calculateDistance(event.clientX, event.clientY, targetCenterX, targetCenterY);
+
+            // We'll assume a radius ~12 (matching half the .target width)
+            if (distanceToTarget > 12) {
+                // User didn't click the correct target, do nothing
+                return;
+            }
+
             const clickX = event.clientX;
             const clickY = event.clientY;
 
@@ -341,6 +458,7 @@
         // Downloading Results
         // ------------------------------
         function downloadResults() {
+            console.log('Download button clicked');
             const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -349,6 +467,7 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
+            console.log('Download initiated');
         }
     </script>
 </body>
