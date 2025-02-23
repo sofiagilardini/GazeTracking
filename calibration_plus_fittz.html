@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gaze vs Click Distance Study</title>
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+        .calibration-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: red;
+            border: 2px solid blue;
+            transition: background-color 0.3s ease;
+        }
+        #controls { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; }
+        .target { position: absolute; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; }
+        .inactive { background-color: gray; }
+        .active { background-color: red; }
+    </style>
+</head>
+<body>
+    <h1>Gaze vs Click Distance Study</h1>
+    <p id="instructions">Calibration Phase: Click each red dot 5 times.</p>
+    <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+    <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+    <button id="nextButton" style="display: none;" onclick="startExperiment()">Start Experiment</button>
+    
+    <script>
+        let calibrationClicks = {};
+        let predictionsVisible = true;
+        let videoFaceVisible = true;
+        let experimentStarted = false;
+        let randomizedOrder = [];
+        let activeTargetIndex = 0;
+        let targetPositions = [];
+        let latestGazeX = null;
+        let latestGazeY = null;
+        let results = [];
+        let clickCount = 0;
+        const maxClicks = 40;
+
+        const calibrationDots = [
+            { x: 100, y: 100 },
+            { x: window.innerWidth - 100, y: 100 },
+            { x: 100, y: window.innerHeight - 100 },
+            { x: window.innerWidth - 100, y: window.innerHeight - 100 },
+            { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        ];
+
+        window.onload = function() {
+            webgazer.setRegression('ridge')
+                .saveDataAcrossSessions(true)
+                .setGazeListener(function(data, timestamp) {
+                    if (data) {
+                        latestGazeX = data.x;
+                        latestGazeY = data.y;
+                    }
+                })
+                .begin({ doVideo: true });
+            
+            webgazer.showPredictionPoints(true);
+            setupCalibration();
+        };
+
+        function setupCalibration() {
+            calibrationDots.forEach((dot, index) => {
+                const dotElement = document.createElement('div');
+                dotElement.className = 'calibration-dot';
+                dotElement.style.left = `${dot.x}px`;
+                dotElement.style.top = `${dot.y}px`;
+                dotElement.dataset.index = index;
+                document.body.appendChild(dotElement);
+
+                calibrationClicks[index] = 0;
+
+                dotElement.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    calibrationClicks[index]++;
+                    updateDotColor(this, calibrationClicks[index]);
+                    if (calibrationClicks[index] >= 5) {
+                        this.style.display = 'none';
+                    }
+                    checkCalibrationComplete();
+                });
+            });
+        }
+
+        function updateDotColor(dot, clicks) {
+            const colors = ["red", "purple", "darkblue", "blue", "lightblue"];
+            dot.style.backgroundColor = colors[Math.min(clicks, colors.length - 1)];
+        }
+
+        function checkCalibrationComplete() {
+            const allDotsClickedEnough = Object.values(calibrationClicks).every(count => count >= 5);
+            if (allDotsClickedEnough) {
+                localStorage.setItem("calibrationDone", "true");
+                document.getElementById('nextButton').style.display = 'inline';
+            }
+        }
+
+        function togglePredictions() {
+            predictionsVisible = !predictionsVisible;
+            webgazer.showPredictionPoints(predictionsVisible);
+        }
+
+        function toggleVideoFace() {
+            videoFaceVisible = !videoFaceVisible;
+            webgazer.showVideo(videoFaceVisible);
+            webgazer.showFaceOverlay(videoFaceVisible);
+            webgazer.showFaceFeedbackBox(videoFaceVisible);
+        }
+
+        function startExperiment() {
+            if (experimentStarted) return;
+            experimentStarted = true;
+            document.body.innerHTML = "<h1>Fitts' Law Experiment</h1><p id='instructions'>Click the red target 40 times.</p>";
+            setupExperiment();
+        }
+
+        function setupExperiment() {
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const radius = 256;
+            
+            targetPositions = [...Array(11)].map((_, i) => {
+                const angle = (i / 11) * 2 * Math.PI;
+                return {
+                    x: centerX + radius * Math.cos(angle) - 12,
+                    y: centerY + radius * Math.sin(angle) - 12
+                };
+            });
+            
+            randomizedOrder = [...Array(targetPositions.length).keys()].sort(() => Math.random() - 0.5);
+            
+            targetPositions.forEach((pos, index) => {
+                const target = document.createElement("div");
+                target.className = "target inactive";
+                target.style.left = `${pos.x}px`;
+                target.style.top = `${pos.y}px`;
+                target.dataset.index = index;
+                document.body.appendChild(target);
+            });
+            
+            moveActiveTarget();
+        }
+
+        function moveActiveTarget() {
+            document.querySelectorAll(".target").forEach(target => {
+                target.classList.remove("active");
+                target.classList.add("inactive");
+            });
+            
+            const newTarget = document.querySelector(`.target[data-index='${randomizedOrder[activeTargetIndex]}']`);
+            if (newTarget) {
+                newTarget.classList.remove("inactive");
+                newTarget.classList.add("active");
+                newTarget.onclick = function(event) { recordClick(event, randomizedOrder[activeTargetIndex]); };
+            }
+        }
+
+        function recordClick(event, index) {
+            if (!experimentStarted) return;
+            clickCount++;
+            
+            if (clickCount < maxClicks) {
+                activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
+                moveActiveTarget();
+            } else {
+                document.getElementById("instructions").innerText = "Experiment complete!";
+            }
+        }
+    </script>
+</body>
+</html>
