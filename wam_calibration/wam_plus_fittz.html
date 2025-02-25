@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Gaze vs Click Distance Study - Moving Calibration</title>
+    <!-- Use a more modern, clean Google Font -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+    <style>
+        /* Overall page styling */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            /* A subtle gradient background for aesthetics */
+            background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 100%);
+            min-height: 100vh;
+            overflow: hidden; /* Avoid scrolling */
+        }
+
+        /* Remove default h1 from the experiment page (no title) */
+        h1 {
+            display: none;
+        }
+
+        /* Controls on the top-right corner */
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 9999; /* Ensure it's above experiment area */
+        }
+        #controls button {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            color: #333;
+            font-weight: 500;
+        }
+        #controls button:hover {
+            background-color: #f5f5f5;
+        }
+        /* Make sure the download button text is visible */
+        #downloadButton {
+            background-color: #09630c !important;
+            color: #fff !important;
+            display: none; /* hidden until done */
+        }
+        #downloadButton:hover {
+            background-color: #073d0a !important;
+        }
+
+        /* Start page - consent form, BEFORE camera request */
+        #startPage {
+            display: block;
+            max-width: 600px;
+            margin: 60px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            color: #333;
+            text-align: left;
+        }
+        #startPage h2 {
+            margin-top: 0;
+            font-weight: 500;
+        }
+        #startPage button {
+            background-color: #2196f3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 20px;
+        }
+        #startPage button:hover {
+            background-color: #1976d2;
+        }
+        #participantName {
+            display: block;
+            margin-top: 10px;
+            padding: 8px;
+            width: 80%;
+            max-width: 300px;
+            font-size: 14px;
+        }
+
+        /* Calibration page styling */
+        #calibrationContainer {
+            display: none; /* Hidden until we start calibration */
+            margin-top: 80px;
+            color: #333;
+        }
+        .calibration-dot {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: red;
+            border: 2px solid blue;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .calibration-dot:hover {
+            transform: scale(1.1);
+        }
+        #calibrationContainer h2 {
+            font-weight: 500;
+        }
+
+        /* Instructions page styling */
+        #instructionsPage {
+            display: none;
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: left;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            color: #333;
+        }
+        #instructionsPage h2 {
+            margin-top: 0;
+            font-weight: 500;
+        }
+        #instructionsPage ul {
+            margin-left: 20px;
+        }
+        #instructionsPage button {
+            display: inline-block;
+            margin-top: 20px;
+            background-color: #ff4081;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #instructionsPage button:hover {
+            background-color: #e73370;
+        }
+
+        /* Experiment area styling */
+        #experimentArea {
+            display: none;
+            position: relative;
+            width: 100%;
+            height: 100vh;
+        }
+        .target {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        .inactive {
+            background-color: gray;
+        }
+        .active {
+            background-color: red;
+        }
+        .target:hover {
+            transform: scale(1.1);
+        }
+
+        /* The experiment counter in the center */
+        #experimentCounter {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Flashing target calibration */
+        .flash-target {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            background-color: orange;
+            border: 2px solid red;
+        }
+    </style>
+</head>
+<body>
+    <!-- The controls always in top-right corner -->
+    <div id="controls">
+        <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+        <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+        <button id="downloadButton" onclick="downloadResults()">Download Results</button>
+    </div>
+
+    <!-- Start page - consent form -->
+    <div id="startPage">
+        <h2>Consent Form</h2>
+        <p>
+            Thank you for participating in this study. This experiment will track your eye gaze using your camera.
+            No video data is stored; only gaze coordinates are recorded.
+            By clicking "I consent," you agree to let this application request camera access.
+        </p>
+        <p>
+            Please ensure you are in a well-lit area and that your face is visible to the camera.
+            After consenting, you will be asked to calibrate your gaze (using a new flashing target protocol!).
+        </p>
+        <label for="participantName">Please enter your name:</label>
+        <input type="text" id="participantName" placeholder="John Doe" />
+        <button onclick="requestCameraAccess()">I Consent</button>
+    </div>
+
+    <!-- Container for calibration -->
+    <div id="calibrationContainer"></div>
+
+    <!-- Container for instructions page -->
+    <div id="instructionsPage"></div>
+
+    <!-- Container for the experiment -->
+    <div id="experimentArea"></div>
+    <div id="experimentCounter"></div>
+
+    <script>
+        let participantName = 'anonymous';
+        let predictionsVisible = true;
+        let videoFaceVisible = true;
+
+        // We'll do a 25-click calibration with a FLASHING target
+        let calTotal = 5;
+        let calClicks = 0;
+        let flashTarget = null;
+
+        // After calibration, same experiment as before
+        let experimentStarted = false;
+        let results = [];
+        let latestGazeX = null;
+        let latestGazeY = null;
+
+        /* The final experiment (like the original) */
+        const maxClicks = 5;
+        let clickCount = 0;
+        let targetPositions = [];
+        let randomizedOrder = [];
+        let activeTargetIndex = 0;
+
+        // On load, hide everything except the start page
+        window.onload = function() {
+            document.getElementById('calibrationContainer').style.display = 'none';
+            document.getElementById('instructionsPage').style.display = 'none';
+            document.getElementById('experimentArea').style.display = 'none';
+            document.getElementById('experimentCounter').style.display = 'none';
+            document.getElementById('downloadButton').style.display = 'none';
+        };
+
+        // 1) Request camera permission
+        function requestCameraAccess() {
+            const nameInput = document.getElementById('participantName');
+            if (nameInput.value.trim() !== "") {
+                participantName = nameInput.value.trim().replace(/\s+/g, '_');
+            } else {
+                participantName = 'anonymous';
+            }
+
+            webgazer
+                .setRegression('ridge')
+                .saveDataAcrossSessions(true)
+                .setGazeListener(function(data, timestamp) {
+                    if (data) {
+                        latestGazeX = data.x;
+                        latestGazeY = data.y;
+                    }
+                })
+                .begin({ doVideo: true })
+                .then(() => {
+                    console.log('Camera access granted.');
+                    document.getElementById('startPage').style.display = 'none';
+                    webgazer.showPredictionPoints(true);
+                    setupFlashingCalibration();
+                })
+                .catch(err => {
+                    console.error('Camera access denied or error:', err);
+                    alert('Camera permission is required to proceed.');
+                });
+        }
+
+        // 2) New flashing calibration
+        function setupFlashingCalibration() {
+            const calContainer = document.getElementById('calibrationContainer');
+            calContainer.style.display = 'block';
+            calContainer.innerHTML = '';
+
+            const h2 = document.createElement('h2');
+            h2.innerText = 'Flashing Target Calibration';
+            calContainer.appendChild(h2);
+
+            const p = document.createElement('p');
+            p.innerText = 'Click the flashing dot whenever it appears. We need 25 clicks in total.';
+            calContainer.appendChild(p);
+
+            calClicks = 0;
+            showFlashingTarget();
+        }
+
+        function showFlashingTarget() {
+            if (flashTarget) {
+                flashTarget.remove();
+            }
+            if (calClicks >= calTotal) {
+                document.getElementById('calibrationContainer').style.display = 'none';
+                showInstructionsPage();
+                return;
+            }
+
+            flashTarget = document.createElement('div');
+            flashTarget.className = 'flash-target';
+            flashTarget.style.width = '24px';
+            flashTarget.style.height = '24px';
+            flashTarget.style.borderRadius = '50%';
+            flashTarget.style.backgroundColor = 'orange';
+            flashTarget.style.border = '2px solid red';
+            flashTarget.style.position = 'absolute';
+            
+            // Choose random location that doesn't overlap with control buttons (top-right)
+            let x, y;
+            do {
+                x = Math.random() * (window.innerWidth - 100);
+                y = Math.random() * (window.innerHeight - 100);
+            } while (x > window.innerWidth - 150 && y < 120);
+
+            flashTarget.style.left = x + 'px';
+            flashTarget.style.top = y + 'px';
+
+            // On click, increment calClicks, spawn next
+            flashTarget.onclick = (e) => {
+                recordCalClick(e, `flashing_cal_${calClicks + 1}`);
+                calClicks++;
+                showFlashingTarget();
+            };
+
+            document.body.appendChild(flashTarget);
+
+            // If not clicked within 1.5s, remove it and spawn new
+            setTimeout(() => {
+                if (document.body.contains(flashTarget)) {
+                    flashTarget.remove();
+                    showFlashingTarget();
+                }
+            }, 6000);
+        }
+
+        // record calibration click
+        function recordCalClick(event, identifier) {
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+            let distVal = null;
+            if (latestGazeX !== null && latestGazeY !== null) {
+                distVal = calculateDistance(clickX, clickY, latestGazeX, latestGazeY).toFixed(2);
+            }
+            results.push({
+                phase: 'calibration',
+                identifier: identifier,
+                clickX: clickX,
+                clickY: clickY,
+                gazeX: latestGazeX,
+                gazeY: latestGazeY,
+                distance: distVal
+            });
+        }
+
+        // 3) Show instructions for the actual experiment
+        function showInstructionsPage() {
+            const instructionsPage = document.getElementById('instructionsPage');
+            instructionsPage.style.display = 'block';
+            instructionsPage.innerHTML = `
+                <h2>Instructions</h2>
+                <p>Please read these instructions carefully before proceeding.</p>
+                <ul>
+                    <li>You will see multiple circles arranged in a circle.</li>
+                    <li>One circle will be red, the rest are grey.</li>
+                    <li>Click on the red circle until you have done so ${maxClicks} times.</li>
+                    <li>You may toggle the video & face features or the gaze predictions using the buttons in the top-right corner at any time.</li>
+                </ul>
+                <button onclick="startExperiment()">Next</button>
+            `;
+        }
+
+        // 4) The same final experiment
+        function startExperiment() {
+            if (experimentStarted) return;
+            experimentStarted = true;
+
+            document.getElementById('instructionsPage').style.display = 'none';
+            document.getElementById('experimentArea').style.display = 'block';
+            document.getElementById('experimentCounter').style.display = 'block';
+
+            setupExperiment();
+        }
+
+        function setupExperiment() {
+            const experimentArea = document.getElementById('experimentArea');
+            experimentArea.innerHTML = '';
+
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+            const radius = 256;
+
+            // 11 random points in a circle
+            targetPositions = [...Array(11)].map((_, i) => {
+                const angle = (i / 11) * 2 * Math.PI;
+                return {
+                    x: centerX + radius * Math.cos(angle) - 12,
+                    y: centerY + radius * Math.sin(angle) - 12
+                };
+            });
+
+            randomizedOrder = [...Array(targetPositions.length).keys()].sort(() => Math.random() - 0.5);
+            activeTargetIndex = 0;
+            clickCount = 0;
+
+            targetPositions.forEach((pos, index) => {
+                const target = document.createElement('div');
+                target.className = 'target inactive';
+                target.style.left = `${pos.x}px`;
+                target.style.top = `${pos.y}px`;
+                target.dataset.index = index;
+                experimentArea.appendChild(target);
+            });
+
+            moveActiveTarget();
+            updateCounter();
+        }
+
+        function moveActiveTarget() {
+            document.querySelectorAll('.target').forEach(target => {
+                target.classList.remove('active');
+                target.classList.add('inactive');
+            });
+
+            const newTarget = document.querySelector(`.target[data-index='${randomizedOrder[activeTargetIndex]}']`);
+            if (newTarget) {
+                newTarget.classList.remove('inactive');
+                newTarget.classList.add('active');
+                newTarget.onclick = (event) => recordExperimentClick(event, randomizedOrder[activeTargetIndex]);
+            }
+        }
+
+        function recordExperimentClick(event, index) {
+            if (!experimentStarted) return;
+
+            const activeT = document.querySelector('.target.active');
+            if (!activeT) return;
+
+            const rect = activeT.getBoundingClientRect();
+            const targetCenterX = rect.left + rect.width / 2;
+            const targetCenterY = rect.top + rect.height / 2;
+            const distanceToTarget = calculateDistance(event.clientX, event.clientY, targetCenterX, targetCenterY);
+
+            if (distanceToTarget > 12) {
+                // user missed the target
+                return;
+            }
+
+            const clickX = event.clientX;
+            const clickY = event.clientY;
+
+            let distVal = null;
+            if (latestGazeX !== null && latestGazeY !== null) {
+                distVal = calculateDistance(clickX, clickY, latestGazeX, latestGazeY).toFixed(2);
+            }
+            results.push({
+                phase: 'experiment',
+                clickX,
+                clickY,
+                gazeX: latestGazeX,
+                gazeY: latestGazeY,
+                distance: distVal,
+                targetIndex: index
+            });
+
+            clickCount++;
+            updateCounter();
+
+            if (clickCount < maxClicks) {
+                activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
+                moveActiveTarget();
+            } else {
+                document.getElementById('experimentCounter').innerText = 'Experiment complete!';
+                document.getElementById('downloadButton').style.display = 'inline';
+            }
+        }
+
+        function updateCounter() {
+            const c = document.getElementById('experimentCounter');
+            c.innerText = `${clickCount} / ${maxClicks} Clicks`;
+        }
+
+        // Helper to measure distance
+        function calculateDistance(x1, y1, x2, y2) {
+            return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+        }
+
+        // Toggles
+        function toggleVideoFace() {
+            videoFaceVisible = !videoFaceVisible;
+            webgazer.showVideo(videoFaceVisible);
+            webgazer.showFaceOverlay(videoFaceVisible);
+            webgazer.showFaceFeedbackBox(videoFaceVisible);
+        }
+
+        function togglePredictions() {
+            predictionsVisible = !predictionsVisible;
+            webgazer.showPredictionPoints(predictionsVisible);
+        }
+
+        // Download results
+        function downloadResults() {
+            const fileName = `fitts_law_experiment_results_${participantName}.json`;
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>

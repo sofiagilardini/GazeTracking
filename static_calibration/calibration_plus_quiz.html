@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gaze vs Click Distance Study</title>
+  <!-- Use a more modern, clean Google Font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+  <style>
+    /* Overall page styling */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+      /* A subtle gradient background for aesthetics */
+      background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 100%);
+      min-height: 100vh;
+      overflow: auto; /* Avoid scrolling */
+    }
+
+    h1 {
+      display: none; /* No title displayed */
+    }
+
+    /* Controls on the top-right corner */
+    #controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 9999; /* Ensure it's above everything else */
+    }
+    #controls button {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      color: #333;
+      font-weight: 500;
+    }
+    #controls button:hover {
+      background-color: #f5f5f5;
+    }
+    #downloadButton {
+      background-color: #4caf50 !important;
+      color: #fff !important;
+      display: none; /* Hidden until user clicks 'Save' */
+    }
+    #downloadButton:hover {
+      background-color: #43a047 !important;
+    }
+
+    /* Start page - consent form (before camera request) */
+    #startPage {
+      display: block;
+      max-width: 600px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+      text-align: left;
+    }
+    #startPage h2 {
+      margin-top: 0;
+      font-weight: 500;
+    }
+    #startPage button {
+      background-color: #2196f3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 20px;
+    }
+    #startPage button:hover {
+      background-color: #1976d2;
+    }
+    #participantName {
+      display: block;
+      margin-top: 10px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      font-size: 14px;
+    }
+
+    /* Calibration container */
+    #calibrationContainer {
+      display: none; /* Shown after camera access */
+      margin-top: 80px;
+      color: #333;
+    }
+    .calibration-dot {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      background-color: red;
+      border: 2px solid blue;
+      transition: background-color 0.3s ease, transform 0.2s;
+    }
+    .calibration-dot:hover {
+      transform: scale(1.1);
+    }
+
+    /* Instructions page styling */
+    #instructionsPage {
+      display: none;
+      max-width: 600px;
+      margin: 50px auto;
+      text-align: left;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+    }
+    #instructionsPage h2 {
+      margin-top: 0;
+      font-weight: 500;
+    }
+    #instructionsPage ul {
+      margin-left: 20px;
+    }
+    #instructionsPage button {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    #instructionsPage button:hover {
+      background-color: #e73370;
+    }
+
+    /* Questionnaire page styling */
+    #questionnairePage {
+      display: none;
+      max-width: 800px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+      text-align: left;
+    }
+    #questionnairePage h2 {
+      font-weight: 500;
+      margin-top: 0;
+    }
+    #questionGrid {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #questionGrid td {
+      padding: 8px;
+      vertical-align: top;
+    }
+    .questionText {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    /* Save button to appear at the end of the questionnaire */
+    #saveButton {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    #saveButton:hover {
+      background-color: #e73370;
+    }
+  </style>
+</head>
+<body>
+  <!-- The controls always in top-right corner -->
+  <div id="controls">
+    <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+    <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+    <button id="downloadButton" onclick="downloadResults()">Download Results</button>
+  </div>
+
+  <!-- Start page - consent form -->
+  <div id="startPage">
+    <h2>Consent Form</h2>
+    <p>
+      Thank you for participating in this study. This experiment will track your eye gaze using your camera.
+      No video data is stored; only gaze coordinates are recorded.
+      By clicking "I consent," you agree to let this application request camera access.
+    </p>
+    <p>
+      Please ensure you are in a well-lit area and that your face is visible to the camera.
+      After consenting, you will be asked to calibrate your gaze.
+    </p>
+    <label for="participantName">Please enter your name:</label>
+    <input type="text" id="participantName" placeholder="John Doe" />
+    <button onclick="requestCameraAccess()">I Consent</button>
+  </div>
+
+  <!-- Calibration container -->
+  <div id="calibrationContainer"></div>
+
+  <!-- Instructions page -->
+  <div id="instructionsPage"></div>
+
+  <!-- The questionnaire page -->
+  <div id="questionnairePage">
+    <h2>Yes/No Questionnaire (40 Questions)</h2>
+    <p>Please answer all 40 questions by selecting Yes or No for each.</p>
+    <table id="questionGrid"></table>
+    <button id="saveButton" onclick="saveQuestionnaire()">Save</button>
+  </div>
+
+  <script>
+    let calibrationDots = [
+      { x: 100, y: 100 },
+      { x: window.innerWidth - 100, y: 100 },
+      { x: 100, y: window.innerHeight - 100 },
+      { x: window.innerWidth - 100, y: window.innerHeight - 100 },
+      { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+    ];
+
+    let calibrationClicks = {};
+    let predictionsVisible = true;
+    let videoFaceVisible = true;
+
+    let latestGazeX = null;
+    let latestGazeY = null;
+    let results = [];  // logs all clicks and gaze
+    let participantName = "anonymous";
+
+    // We'll have 40 questions total, in rows of 3 each => 14 rows, with partial last row
+    const totalQuestions = 40;
+    let questionData = [];
+
+    window.onload = function() {
+      // Hide calibration & instructions by default.
+      document.getElementById('calibrationContainer').style.display = 'none';
+      document.getElementById('instructionsPage').style.display = 'none';
+      document.getElementById('questionnairePage').style.display = 'none';
+    };
+
+    // Step 1: request camera permission, but do not show calibration yet.
+    function requestCameraAccess() {
+      // Grab participant name
+      const nameInput = document.getElementById('participantName');
+      if (nameInput.value.trim() !== "") {
+        participantName = nameInput.value.trim().replace(/\s+/g, '_');
+      } else {
+        participantName = "anonymous";
+      }
+
+      // 2. Start webgazer
+      webgazer
+        .setRegression('ridge')
+        .saveDataAcrossSessions(true)
+        .setGazeListener(function(data, timestamp) {
+          if (data) {
+            latestGazeX = data.x;
+            latestGazeY = data.y;
+          }
+        })
+        .begin({ doVideo: true })
+        .then(() => {
+          console.log("Camera access granted.");
+          document.getElementById('startPage').style.display = 'none';
+          webgazer.showPredictionPoints(true);
+          setupCalibration();
+        })
+        .catch(err => {
+          console.error("Camera access denied or error:", err);
+          alert("Camera permission is required to proceed.");
+        });
+    }
+
+    // --------------------------
+    // Calibration
+    // --------------------------
+    function setupCalibration() {
+      const calibrationContainer = document.getElementById('calibrationContainer');
+      calibrationContainer.style.display = 'block';
+      calibrationContainer.innerHTML = '';
+
+      const calibrationHeader = document.createElement('h2');
+      calibrationHeader.innerText = 'Calibration Phase';
+      calibrationContainer.appendChild(calibrationHeader);
+
+      const calibrationMsg = document.createElement('p');
+      calibrationMsg.innerText = 'Click each red dot 5 times to calibrate.';
+      calibrationContainer.appendChild(calibrationMsg);
+
+      // Place calibration dots
+      calibrationDots.forEach((dot, index) => {
+        calibrationClicks[index] = 0;
+        const dotElement = document.createElement('div');
+        dotElement.className = 'calibration-dot';
+        dotElement.style.left = `${dot.x}px`;
+        dotElement.style.top = `${dot.y}px`;
+        dotElement.dataset.index = index;
+        document.body.appendChild(dotElement);
+
+        dotElement.addEventListener('click', function(e) {
+          // Log the click for distance
+          recordClick(e, `calibration_dot_${index}`);
+          calibrationClicks[index]++;
+          updateDotColor(this, calibrationClicks[index]);
+          if (calibrationClicks[index] >= 5) {
+            this.style.display = 'none';
+          }
+          checkCalibrationComplete();
+        });
+      });
+    }
+
+    function updateDotColor(dot, clicks) {
+      const colors = ["red", "purple", "darkblue", "blue", "lightblue"];
+      dot.style.backgroundColor = colors[Math.min(clicks, colors.length - 1)];
+    }
+
+    function checkCalibrationComplete() {
+      const allDotsClickedEnough = Object.values(calibrationClicks).every(count => count >= 5);
+      if (allDotsClickedEnough) {
+        localStorage.setItem("calibrationDone", "true");
+        showInstructionsPage();
+      }
+    }
+
+    // ----------------------------
+    // Show Instructions Page
+    // ----------------------------
+    function showInstructionsPage() {
+      // Hide calibration container
+      document.getElementById('calibrationContainer').style.display = 'none';
+
+      // Show the instructions page
+      const instructionsPage = document.getElementById('instructionsPage');
+      instructionsPage.style.display = 'block';
+
+      instructionsPage.innerHTML = `
+        <h2>Instructions</h2>
+        <p>Please read these instructions carefully before proceeding.</p>
+        <ul>
+          <li>You will see 40 yes/no questions laid out in a grid, with 3 questions per row where possible.</li>
+          <li>Select Yes or No for each question by clicking the radio buttons.</li>
+          <li>Each click is also used to measure gaze distance, so be sure to click accurately.</li>
+        </ul>
+        <button onclick="showQuestionnaire()">Next</button>
+      `;
+    }
+
+    // ----------------------------
+    // Show Questionnaire
+    // ----------------------------
+    function showQuestionnaire() {
+      document.getElementById('instructionsPage').style.display = 'none';
+      buildQuestionnaire();
+      document.getElementById('questionnairePage').style.display = 'block';
+    }
+
+    // Build a 40-question Yes/No quiz in a grid
+    function buildQuestionnaire() {
+      const questionGrid = document.getElementById('questionGrid');
+      questionGrid.innerHTML = ""; // Clear previous if any
+
+      // Example placeholder text
+      // We'll create 40 yes/no placeholders
+      const questions = [];
+      for (let i = 1; i <= totalQuestions; i++) {
+        questions.push(`Question ${i}: Lorem ipsum dolor sit amet?`);
+      }
+
+      // We'll display them in rows of 3
+      // e.g. each row has 3 <td> each containing a question with yes/no
+      let rowCount = Math.ceil(totalQuestions / 3);
+
+      let questionIndex = 0;
+      for (let r = 0; r < rowCount; r++) {
+        const tr = document.createElement('tr');
+
+        for (let c = 0; c < 3; c++) {
+          // If we exceed totalQuestions, break
+          if (questionIndex >= totalQuestions) break;
+
+          const td = document.createElement('td');
+          // Build the question block
+          const qDiv = document.createElement('div');
+          qDiv.className = 'questionBlock';
+
+          const qText = document.createElement('div');
+          qText.className = 'questionText';
+          qText.innerText = questions[questionIndex];
+
+          // yes/no radio
+          const yesId = `q${questionIndex}_yes`;
+          const noId = `q${questionIndex}_no`;
+
+          const yesLabel = document.createElement('label');
+          yesLabel.htmlFor = yesId;
+          yesLabel.innerText = "Yes";
+
+          const yesRadio = document.createElement('input');
+          yesRadio.type = "radio";
+          yesRadio.name = `q${questionIndex}_radio`;
+          yesRadio.id = yesId;
+          yesRadio.onclick = (e) => recordClick(e, `question_${questionIndex}_YES`);
+
+          const noLabel = document.createElement('label');
+          noLabel.htmlFor = noId;
+          noLabel.innerText = "No";
+
+          const noRadio = document.createElement('input');
+          noRadio.type = "radio";
+          noRadio.name = `q${questionIndex}_radio`;
+          noRadio.id = noId;
+          noRadio.onclick = (e) => recordClick(e, `question_${questionIndex}_NO`);
+
+          // Append them in a line
+          qDiv.appendChild(qText);
+          qDiv.appendChild(yesRadio);
+          qDiv.appendChild(yesLabel);
+          qDiv.appendChild(document.createTextNode("  "));
+          qDiv.appendChild(noRadio);
+          qDiv.appendChild(noLabel);
+
+          td.appendChild(qDiv);
+          tr.appendChild(td);
+
+          questionIndex++;
+        }
+        questionGrid.appendChild(tr);
+      }
+    }
+
+    function saveQuestionnaire() {
+  // We have totalQuestions (e.g. 40).
+  for (let q = 0; q < totalQuestions; q++) {
+    const yesRadio = document.getElementById(`q${q}_yes`);
+    const noRadio = document.getElementById(`q${q}_no`);
+    // If neither is checked, alert and stop
+    if (!yesRadio.checked && !noRadio.checked) {
+      alert(`Please answer question ${q + 1} before saving.`);
+      return;
+    }
+  }
+  
+  // If we get here, all 40 questions are answered.
+  document.getElementById('downloadButton').style.display = 'inline';
+  alert("Questionnaire saved. You may now download your results.");
+}
+    // ------------------------------
+    // RECORDING CLICKS & GAZE
+    // ------------------------------
+    function recordClick(event, identifier) {
+      // If we have gaze data, calculate distance
+      const clickX = event.clientX;
+      const clickY = event.clientY;
+
+      let distanceVal = null;
+      if (latestGazeX !== null && latestGazeY !== null) {
+        distanceVal = calculateDistance(clickX, clickY, latestGazeX, latestGazeY).toFixed(2);
+      }
+      results.push({
+        identifier: identifier,
+        clickX,
+        clickY,
+        gazeX: latestGazeX,
+        gazeY: latestGazeY,
+        distance: distanceVal
+      });
+    }
+
+    function calculateDistance(x1, y1, x2, y2) {
+      return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+    }
+
+    // ------------------------------
+    // TOGGLE BUTTONS
+    // ------------------------------
+    function toggleVideoFace() {
+      videoFaceVisible = !videoFaceVisible;
+      webgazer.showVideo(videoFaceVisible);
+      webgazer.showFaceOverlay(videoFaceVisible);
+      webgazer.showFaceFeedbackBox(videoFaceVisible);
+    }
+
+    function togglePredictions() {
+      predictionsVisible = !predictionsVisible;
+      webgazer.showPredictionPoints(predictionsVisible);
+    }
+
+    // ------------------------------
+    // DOWNLOAD RESULTS
+    // ------------------------------
+    function downloadResults() {
+      const fileName = `questionnaire_experiment_results_${participantName}.json`;
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
