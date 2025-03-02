@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gaze vs Click Distance Study</title>
+  <!-- Use a modern, clean Google Font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+  <style>
+    /* Overall page styling */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 100%);
+      min-height: 100vh;
+      overflow: auto; /* Allows scrolling if needed */
+    }
+
+    h1 {
+      display: none; /* No big title */
+    }
+
+    /* Controls on the top-right corner - only Download button remains */
+    #controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 9999; /* Ensure it's above everything else */
+    }
+    #controls button {
+      background-color: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      font-weight: 500;
+    }
+    #controls button:hover {
+      background-color: #43a047;
+    }
+
+    /* Start page - consent form */
+    #startPage {
+      display: block;
+      max-width: 600px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+      text-align: left;
+    }
+    #startPage h2 {
+      margin-top: 0;
+      font-weight: 500;
+    }
+    #startPage button {
+      background-color: #2196f3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 20px;
+    }
+    #startPage button:hover {
+      background-color: #1976d2;
+    }
+    #participantName {
+      display: block;
+      margin-top: 10px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      font-size: 14px;
+    }
+
+    /* Face Check Page styling */
+    #faceCheckPage {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* Removed white overlay; now transparent */
+      background: transparent;
+      z-index: 10000;
+      text-align: center;
+      pointer-events: none; /* Allow video to be visible and interactive if needed */
+    }
+    #faceCheckText {
+      position: absolute;
+      bottom: 20%;
+      width: 100%;
+      font-size: 24px;
+      color: #333;
+      pointer-events: auto;
+    }
+    #faceCheckPage button {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      pointer-events: auto;
+    }
+    #faceCheckPage button:hover {
+      background-color: #e73370;
+    }
+
+    /* Instructions page styling */
+    #instructionsPage {
+      display: none;
+      max-width: 600px;
+      margin: 50px auto;
+      text-align: left;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+    }
+    #instructionsPage h2 {
+      margin-top: 0;
+      font-weight: 500;
+    }
+    #instructionsPage ul {
+      margin-left: 20px;
+    }
+    #instructionsPage button {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    #instructionsPage button:hover {
+      background-color: #e73370;
+    }
+
+    /* Questionnaire page styling */
+    #questionnairePage {
+      display: none;
+      width: 95%; /* Full width to stretch across entire display */
+      margin: 50px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+      text-align: left;
+    }
+    #questionnairePage h2 {
+      font-weight: 500;
+      margin-top: 0;
+    }
+    #questionGrid {
+      margin-top: 20px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #questionGrid td {
+      padding: 8px;
+      vertical-align: top;
+      width: 33%;
+    }
+    .questionText {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    /* Save button to appear at the end of the questionnaire */
+    #saveButton {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    #saveButton:hover {
+      background-color: #e73370;
+    }
+  </style>
+</head>
+<body>
+  <!-- Controls: Only the Download button remains -->
+  <div id="controls">
+    <button id="downloadButton" onclick="downloadResults()">Download Results</button>
+  </div>
+
+  <!-- Start page - consent form -->
+  <div id="startPage">
+    <h2>Consent Form</h2>
+    <p>
+      Thank you for participating in this study. This experiment will track your eye gaze using your camera.
+      No video data is stored; only gaze coordinates are recorded.
+      By clicking "I consent," you agree to let this application request camera access.
+    </p>
+    <p>
+      Please ensure you are in a well-lit area and that your face is visible to the camera.
+      After consenting, you will see a set of instructions followed by a yes/no questionnaire.
+    </p>
+    <label for="participantName">Please enter your name:</label>
+    <input type="text" id="participantName" placeholder="John Doe" />
+    <button onclick="requestCameraAccess()">I Consent</button>
+  </div>
+
+  <!-- Face Check Page -->
+  <div id="faceCheckPage">
+    <div id="faceCheckText">Place your face in the bounding box</div>
+    <button onclick="continueAfterFaceCheck()">Continue</button>
+  </div>
+
+  <!-- Instructions page -->
+  <div id="instructionsPage"></div>
+
+  <!-- Questionnaire page -->
+  <div id="questionnairePage">
+    <h2>Yes/No Questionnaire (40 Questions)</h2>
+    <p>Please answer all 40 questions by selecting Yes or No for each. Each click is recorded with your gaze data.</p>
+    <table id="questionGrid"></table>
+    <button id="saveButton" onclick="saveQuestionnaire()">Save</button>
+  </div>
+
+  <script>
+    let participantName = 'anonymous';
+    let videoFeedbackDisabled = false; // flag to permanently disable video feedback
+
+    let latestGazeX = null;
+    let latestGazeY = null;
+    let results = [];  // logs all clicks and gaze
+    const totalQuestions = 40;
+
+    // Real yes/no questions
+    const questionTexts = [
+      "Did you know that honey never spoils?",
+      "Did you know that some turtles can breathe through their butts?",
+      "Did you know that bananas are berries, but strawberries aren't?",
+      "Did you know that your fingernails grow faster on your dominant hand?",
+      "Did you know that 'Kummerspeck' in German means 'grief bacon'?",
+      "Did you know that wombats have cube-shaped poop?",
+      "Did you know that sea otters hold hands while they sleep?",
+      "Did you know that the Eiffel Tower can be 15 cm taller in summer?",
+      "Did you know that octopuses have three hearts?",
+      "Did you know that sharks existed before trees?",
+      "Did you know that a day on Venus is longer than a year on Venus?",
+      "Did you know that lobsters pee out of their faces?",
+      "Did you know that pineapples grow from the ground, not on trees?",
+      "Did you know that outer space smells like burnt steak?",
+      "Did you know that a group of flamingos is called a 'flamboyance'?",
+      "Did you know that your brain can’t feel pain?",
+      "Did you know that bees sometimes sting other bees?",
+      "Did you know that dolphins have names for each other?",
+      "Did you know that peanuts are not nuts but legumes?",
+      "Did you know that cows can walk upstairs, but not downstairs?",
+      "Do you prefer coffee over tea in the morning?",
+      "Have you ever laughed at a joke you didn't really understand?",
+      "Do you think cats are better pets than dogs?",
+      "Would you rather travel to the future than to the past?",
+      "Do you think pineapple belongs on pizza?",
+      "Have you ever pretended to know a song when you really didn't?",
+      "Would you enjoy living on Mars if it were safe?",
+      "Do you think it's more fun to be spontaneous than to plan ahead?",
+      "Have you ever felt that time moves faster when you're bored?",
+      "Do you think social media does more harm than good?",
+      "Would you rather have a pause button for life than a rewind button?",
+      "Have you ever stayed up late even though you were tired, just to avoid missing out?",
+      "Do you believe breakfast is the most important meal of the day?",
+      "Would you rather watch a movie alone than with friends sometimes?",
+      "Do you believe 'once a cheater, always a cheater'?",
+      "Have you ever wanted to learn a totally random skill for no reason?",
+      "Do you find rainy days more relaxing than sunny days?",
+      "Would you rather read an e-book than a physical book?",
+      "Do you believe in extraterrestrial life?",
+      "Have you ever done something adventurous just to conquer a fear?"
+    ];
+
+    // onLoad, hide instructions & questionnaire
+    window.onload = function() {
+      document.getElementById('instructionsPage').style.display = 'none';
+      document.getElementById('questionnairePage').style.display = 'none';
+      document.getElementById('downloadButton').style.display = 'none';
+    };
+
+    // Step 1: request camera permission
+    function requestCameraAccess() {
+      const nameInput = document.getElementById('participantName');
+      if (nameInput.value.trim() !== "") {
+        participantName = nameInput.value.trim().replace(/\s+/g, '_');
+      }
+
+      webgazer
+        .setRegression('ridge')
+        .saveDataAcrossSessions(true)
+        .setGazeListener(function(data, timestamp) {
+          if (data) {
+            latestGazeX = data.x;
+            latestGazeY = data.y;
+          }
+        })
+        .begin({ doVideo: true })
+        .then(() => {
+          console.log("Camera access granted.");
+          document.getElementById('startPage').style.display = 'none';
+          webgazer.showPredictionPoints(false);
+          showFaceCheckPage(); // show face check page after consent
+        })
+        .catch(err => {
+          console.error("Camera access denied or error:", err);
+          alert("Camera permission is required to proceed.");
+        });
+    }
+
+    // Show Face Check Page
+    function showFaceCheckPage() {
+      const faceCheckPage = document.getElementById('faceCheckPage');
+      faceCheckPage.style.display = 'block';
+      // Ensure video and bounding box are visible; disable facial mesh
+      webgazer.showVideo(true);
+      webgazer.showFaceOverlay(false);
+      webgazer.showFaceFeedbackBox(true);
+    }
+
+    // Called when user clicks "Continue" on the face check page
+    function continueAfterFaceCheck() {
+      // Turn off video feedback permanently
+      webgazer.showVideo(false);
+      videoFeedbackDisabled = true;
+      // Hide the face check page and proceed to instructions
+      document.getElementById('faceCheckPage').style.display = 'none';
+      showInstructionsPage();
+    }
+
+    // Show instructions page
+    function showInstructionsPage() {
+      const instructionsPage = document.getElementById('instructionsPage');
+      instructionsPage.style.display = 'block';
+      instructionsPage.innerHTML = `
+        <h2>Instructions</h2>
+        <p>Please read these instructions carefully before proceeding.</p>
+        <ul>
+          <li>You will see a set of 40 yes/no questions in a grid (3 columns per row).</li>
+          <li>Select Yes or No for each question by clicking the radio buttons.</li>
+          <li>Each click is recorded along with your gaze data.</li>
+        </ul>
+        <button onclick="showQuestionnaire()">Next</button>
+      `;
+    }
+
+    // Show questionnaire
+    function showQuestionnaire() {
+      document.getElementById('instructionsPage').style.display = 'none';
+      buildQuestionnaire();
+      document.getElementById('questionnairePage').style.display = 'block';
+    }
+
+    // Build 40 yes/no questions
+    function buildQuestionnaire() {
+      const questionGrid = document.getElementById('questionGrid');
+      questionGrid.innerHTML = "";
+      let rowCount = Math.ceil(totalQuestions / 3);
+      let questionIndex = 0;
+      for (let r = 0; r < rowCount; r++) {
+        const tr = document.createElement('tr');
+        for (let c = 0; c < 3; c++) {
+          if (questionIndex >= totalQuestions) break;
+          const td = document.createElement('td');
+          const qDiv = document.createElement('div');
+          qDiv.className = 'questionBlock';
+          const qText = document.createElement('div');
+          qText.className = 'questionText';
+          qText.innerText = questionTexts[questionIndex];
+          const yesId = `q${questionIndex}_yes`;
+          const noId = `q${questionIndex}_no`;
+          const yesLabel = document.createElement('label');
+          yesLabel.htmlFor = yesId;
+          yesLabel.innerText = "Yes";
+          const yesRadio = document.createElement('input');
+          yesRadio.type = "radio";
+          yesRadio.name = `q${questionIndex}_radio`;
+          yesRadio.id = yesId;
+          yesRadio.onclick = (e) => recordClick(e, `Q${questionIndex}_YES`);
+          const noLabel = document.createElement('label');
+          noLabel.htmlFor = noId;
+          noLabel.innerText = "No";
+          const noRadio = document.createElement('input');
+          noRadio.type = "radio";
+          noRadio.name = `q${questionIndex}_radio`;
+          noRadio.id = noId;
+          noRadio.onclick = (e) => recordClick(e, `Q${questionIndex}_NO`);
+          qDiv.appendChild(qText);
+          qDiv.appendChild(yesRadio);
+          qDiv.appendChild(yesLabel);
+          qDiv.appendChild(document.createTextNode("  "));
+          qDiv.appendChild(noRadio);
+          qDiv.appendChild(noLabel);
+          td.appendChild(qDiv);
+          tr.appendChild(td);
+          questionIndex++;
+        }
+        questionGrid.appendChild(tr);
+      }
+    }
+
+    function saveQuestionnaire() {
+      for (let q = 0; q < totalQuestions; q++) {
+        const yesRadio = document.getElementById(`q${q}_yes`);
+        const noRadio = document.getElementById(`q${q}_no`);
+        if (!yesRadio.checked && !noRadio.checked) {
+          alert(`Please answer question ${q + 1} before saving.`);
+          return;
+        }
+      }
+      document.getElementById('downloadButton').style.display = 'inline';
+      alert("Questionnaire saved. You may now download your results.");
+    }
+
+    // Record click + gaze
+    function recordClick(event, identifier) {
+      const clickX = event.clientX;
+      const clickY = event.clientY;
+      let distanceVal = null;
+      if (latestGazeX !== null && latestGazeY !== null) {
+        distanceVal = calculateDistance(clickX, clickY, latestGazeX, latestGazeY).toFixed(2);
+      }
+      results.push({
+        identifier,
+        clickX,
+        clickY,
+        gazeX: latestGazeX,
+        gazeY: latestGazeY,
+        distance: distanceVal
+      });
+    }
+
+    function calculateDistance(x1, y1, x2, y2) {
+      return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+    }
+
+    // Download results
+    function downloadResults() {
+      const fileName = `questionnaire_experiment_results_${participantName}.json`;
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  </script>
+</body>
+</html>
