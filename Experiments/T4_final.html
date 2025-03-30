@@ -1,534 +1,623 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>Gaze vs Click Distance Study</title>
-    <!-- Use a more modern, clean Google Font -->
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
-    <style>
-        /* Overall page styling */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Roboto', sans-serif;
-            text-align: center;
-            /* A subtle gradient background for aesthetics */
-            background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 100%);
-            min-height: 100vh;
-            overflow: hidden; /* Avoid scrolling */
-        }
-
-        /* Remove default h1 from the experiment page (no title) */
-        h1 {
-            display: none;
-        }
-
-        /* Controls on the top-right corner */
-        #controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 9999; /* Ensure it's above experiment area */
-        }
-        #controls button {
-            background-color: #fff;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            padding: 8px 12px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            color: #333;
-            font-weight: 500;
-        }
-        #controls button:hover {
-            background-color: #f5f5f5;
-        }
-        /* Make sure the download button text is visible */
-        #downloadButton {
-            background-color: #09630c !important;
-            color: #fff !important;
-        }
-        #downloadButton:hover {
-            background-color: #073d0a !important;
-        }
-
-        /* Start page - consent form, BEFORE camera request */
-        #startPage {
-            display: block;
-            max-width: 600px;
-            margin: 60px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            color: #333;
-            text-align: left;
-        }
-        #startPage h2 {
-            margin-top: 0;
-            font-weight: 500;
-        }
-        #startPage button {
-            background-color: #2196f3;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            margin-top: 20px;
-        }
-        #startPage button:hover {
-            background-color: #1976d2;
-        }
-        #participantName {
-            display: block;
-            margin-top: 10px;
-            padding: 8px;
-            width: 80%;
-            max-width: 300px;
-            font-size: 14px;
-        }
-
-        /* Face Check Page styling */
-        #faceCheckPage {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            /* Transparent background so video remains visible */
-            background: transparent;
-            z-index: 10000;
-            text-align: center;
-            pointer-events: none;
-        }
-        #faceCheckText {
-            position: absolute;
-            bottom: 20%;
-            width: 100%;
-            font-size: 24px;
-            color: #333;
-            pointer-events: auto;
-        }
-        #faceCheckPage button {
-            position: absolute;
-            bottom: 10%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ff4081;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            pointer-events: auto;
-        }
-        #faceCheckPage button:hover {
-            background-color: #e73370;
-        }
-
-        /* Instructions page styling */
-        #instructionsPage {
-            display: none;
-            max-width: 600px;
-            margin: 50px auto;
-            text-align: left;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            color: #333;
-        }
-        #instructionsPage h2 {
-            margin-top: 0;
-            font-weight: 500;
-        }
-        #instructionsPage ul {
-            margin-left: 20px;
-        }
-        #instructionsPage button {
-            display: inline-block;
-            margin-top: 20px;
-            background-color: #ff4081;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
-            padding: 10px 16px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-        #instructionsPage button:hover {
-            background-color: #e73370;
-        }
-
-        /* Experiment area styling */
-        #experimentArea {
-            display: none;
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
-        .target {
-            position: absolute;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s;
-        }
-        .inactive {
-            background-color: gray;
-        }
-        .active {
-            background-color: red;
-        }
-        .target:hover {
-            transform: scale(1.1);
-        }
-
-        /* The experiment counter / pause overlay in the center */
-        #experimentCounter {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 24px;
-            color: #333;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 10px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Gaze vs Click Distance Study</title>
+  <!-- Use a more modern, clean Google Font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://webgazer.cs.brown.edu/webgazer.js"></script>
+  <style>
+    /* Overall page styling */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #E0F7FA 0%, #FCE4EC 100%);
+      min-height: 100vh;
+      overflow: hidden; /* Avoid scrolling */
+    }
+    h1 {
+      display: none;
+    }
+    /* Controls on the top-right corner */
+    #controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 9999;
+    }
+    #controls button {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      color: #333;
+      font-weight: 500;
+    }
+    #controls button:hover {
+      background-color: #f5f5f5;
+    }
+    #downloadButton {
+      background-color: #09630c !important;
+      color: #fff !important;
+    }
+    #downloadButton:hover {
+      background-color: #073d0a !important;
+    }
+    /* Start page - consent form */
+    #startPage {
+      display: block;
+      max-width: 600px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      color: #333;
+      text-align: left;
+    }
+    #startPage h2 {
+      margin-top: 0;
+      font-weight: 500;
+    }
+    #startPage button {
+      background-color: #2196f3;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 20px;
+    }
+    #startPage button:hover {
+      background-color: #1976d2;
+    }
+    #participantName {
+      display: block;
+      margin-top: 10px;
+      padding: 8px;
+      width: 80%;
+      max-width: 300px;
+      font-size: 14px;
+    }
+    /* Face Check Page styling */
+    #faceCheckPage {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      z-index: 10000;
+      text-align: center;
+      pointer-events: none;
+    }
+    #faceCheckText {
+      position: absolute;
+      bottom: 20%;
+      width: 100%;
+      font-size: 24px;
+      color: #333;
+      pointer-events: auto;
+    }
+    #faceCheckPage button {
+      position: absolute;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      pointer-events: auto;
+    }
+    #faceCheckPage button:hover {
+      background-color: #e73370;
+    }
+    /* Instructions page styling */
+    #instructionsPage {
+      display: none;
+      max-width: 600px;
+      margin: 50px auto;
+      text-align: left;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      color: #333;
+    }
+    #instructionsPage h2 {
+      margin-top: 0;
+      font-weight: 500;
+    }
+    #instructionsPage ul {
+      margin-left: 20px;
+    }
+    #instructionsPage button {
+      display: inline-block;
+      margin-top: 20px;
+      background-color: #ff4081;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+    #instructionsPage button:hover {
+      background-color: #e73370;
+    }
+    /* Experiment area styling (Fitts test) */
+    #experimentArea {
+      display: none;
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+    .target {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s;
+    }
+    .inactive {
+      background-color: gray;
+    }
+    .active {
+      background-color: red;
+    }
+    .target:hover {
+      transform: scale(1.1);
+    }
+    /* Counter / status overlay */
+    #experimentCounter {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 24px;
+      color: #333;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    /* Aggressor trial overlay */
+    #aggressorOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.95);
+      z-index: 10000;
+      text-align: center;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+    #aggressorOverlay .cue {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border: 2px solid #000;
+    }
+    #aggressorOverlay .mouseCue {
+      background-color: red;
+    }
+    #aggressorOverlay .gazeCue {
+      background-color: blue;
+    }
+    #aggressorOverlay p {
+      position: absolute;
+      width: 80%;
+      font-size: 20px;
+      color: #333;
+    }
+  </style>
 </head>
 <body>
-    <!-- The controls always in top-right corner -->
-    <div id="controls">
-        <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
-        <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
-        <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
-    </div>
+  <!-- Controls -->
+  <div id="controls">
+    <button id="toggleVideoFaceButton" onclick="toggleVideoFace()">Toggle Video & Face Features</button>
+    <button id="togglePredictionsButton" onclick="togglePredictions()">Toggle Predictions</button>
+    <button id="downloadButton" style="display: none;" onclick="downloadResults()">Download Results</button>
+  </div>
 
-    <!-- Start page - consent form, BEFORE camera request -->
-    <div id="startPage">
-        <h2>Consent Form</h2>
-        <p>
-            Thank you for participating in this study. This experiment will track your eye gaze using your camera.
-            No video data is stored; only gaze coordinates are recorded.
-            By clicking "I consent," you agree to let this application request camera access.
-        </p>
-        <p>
-            Please ensure you are in a well-lit area and that your face is visible to the camera.
-        </p>
-        <label for="participantName">Please enter your name:</label>
-        <input type="text" id="participantName" placeholder="John Doe" />
-        <button onclick="requestCameraAccess()">I Consent</button>
-    </div>
+  <!-- Start page -->
+  <div id="startPage">
+    <h2>Consent Form</h2>
+    <p>
+      Thank you for participating in this study. This experiment will track your eye gaze using your camera.
+      No video data is stored; only gaze coordinates are recorded.
+      By clicking "I consent," you agree to let this application request camera access.
+    </p>
+    <p>
+      Please ensure you are in a well-lit area and that your face is visible to the camera.
+    </p>
+    <label for="participantName">Please enter your participant ID:</label>
+    <input type="text" id="participantName" placeholder="ID_01" />
+    <button onclick="requestCameraAccess()">I Consent</button>
+  </div>
 
-    <!-- Face Check Page -->
-    <div id="faceCheckPage">
-        <div id="faceCheckText">Place your face in the bounding box</div>
-        <button onclick="continueAfterFaceCheck()">Continue</button>
-    </div>
+  <!-- Face Check Page -->
+  <div id="faceCheckPage">
+    <div id="faceCheckText">Place your face in the bounding box</div>
+    <button onclick="continueAfterFaceCheck()">Continue</button>
+  </div>
 
-    <!-- Container for instructions page -->
-    <div id="instructionsPage"></div>
+  <!-- Instructions Page -->
+  <div id="instructionsPage"></div>
 
-    <!-- Container for the experiment -->
-    <div id="experimentArea"></div>
-    <div id="experimentCounter"></div>
-    <!-- Audio element for beep sound during pauses -->
-    <audio id="beepAudio" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+  <!-- Experiment Area (Fitts test) -->
+  <div id="experimentArea"></div>
+  <div id="experimentCounter"></div>
 
-    <script>
-        // Set debugMode here: true means toggle buttons are visible; false means they are hidden.
-        const debugMode = false;
+  <!-- Aggressor Trial Overlay -->
+  <div id="aggressorOverlay">
+    <div id="mouseCue" class="cue mouseCue"></div>
+    <div id="gazeCue" class="cue gazeCue"></div>
+    <p id="aggressorMessage"></p>
+  </div>
 
-        let predictionsVisible = true;
-        let videoFaceVisible = true;
-        let experimentStarted = false;
-        let randomizedOrder = [];
-        let activeTargetIndex = 0;
-        let targetPositions = [];
-        let latestGazeX = null;
-        let latestGazeY = null;
-        let results = [];
-        let clickCount = 0;
-        const maxClicks = 40;
-        let participantName = "anonymous";
+  <!-- Audio for sound cue (if needed) -->
+  <audio id="beepAudio" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
-        // Wait for user to consent.
-        window.onload = function() {
-            // Hide instructions & experiment area by default.
-            document.getElementById('instructionsPage').style.display = 'none';
-            document.getElementById('experimentArea').style.display = 'none';
-            document.getElementById('experimentCounter').style.display = 'none';
+  <script>
+    // DEBUG mode (toggle controls visibility)
+    const debugMode = false;
 
-            // Hide toggle buttons if debug mode is OFF.
-            if (!debugMode) {
-                document.getElementById('toggleVideoFaceButton').style.display = 'none';
-                document.getElementById('togglePredictionsButton').style.display = 'none';
-            }
+    // Global variables for gaze, results, and participant
+    let predictionsVisible = true;
+    let videoFaceVisible = true;
+    let latestGazeX = null;
+    let latestGazeY = null;
+    let results = [];
+    let participantName = "anonymous";
+
+    // ----- Experiment structure variables -----
+    // Total Fitts clicks per phase before an aggressor trial:
+    const fittsClicksPerPhase = 15;
+    // Total aggressor trials to run:
+    const aggressorTrialsTotal = 4;
+    // Overall maximum clicks = (fitts phases) + (2 clicks per aggressor trial)
+    const maxClicks = fittsClicksPerPhase * (aggressorTrialsTotal + 1) + 2 * aggressorTrialsTotal;
+
+    // Counters and state
+    let experimentStarted = false;
+    let currentPhase = "fitts"; // "fitts" or "aggressor"
+    let currentFittsClicks = 0; // clicks in the current Fitts phase
+    let overallClickCount = 0;
+    let aggressorTrialIndex = 0;
+    let aggressorClickCount = 0;
+
+    // For Fitts test: store target positions (calculated in setupExperiment)
+    let targetPositions = [];
+    let randomizedOrder = [];
+    let activeTargetIndex = 0;
+
+    // Aggressor cue definitions (four different configurations)
+    function getAggressorCues() {
+      return [
+        { mouseCue: { x: window.innerWidth * 0.9, y: window.innerHeight * 0.1 },
+          gazeCue: { x: window.innerWidth * 0.1, y: window.innerHeight * 0.9 } },
+        { mouseCue: { x: window.innerWidth * 0.1, y: window.innerHeight * 0.1 },
+          gazeCue: { x: window.innerWidth * 0.9, y: window.innerHeight * 0.9 } },
+        { mouseCue: { x: window.innerWidth * 0.9, y: window.innerHeight * 0.9 },
+          gazeCue: { x: window.innerWidth * 0.1, y: window.innerHeight * 0.1 } },
+        { mouseCue: { x: window.innerWidth * 0.1, y: window.innerHeight * 0.9 },
+          gazeCue: { x: window.innerWidth * 0.9, y: window.innerHeight * 0.1 } }
+      ];
+    }
+
+    // ----- On Load -----
+    window.onload = function() {
+      document.getElementById('instructionsPage').style.display = 'none';
+      document.getElementById('experimentArea').style.display = 'none';
+      document.getElementById('experimentCounter').style.display = 'none';
+
+      if (!debugMode) {
+        document.getElementById('toggleVideoFaceButton').style.display = 'none';
+        document.getElementById('togglePredictionsButton').style.display = 'none';
+      }
+    };
+
+    // ----- Camera and Face Check -----
+    function requestCameraAccess() {
+      const nameInput = document.getElementById('participantName');
+      if (nameInput.value.trim() !== "") {
+        participantName = nameInput.value.trim().replace(/\s+/g, '_');
+      } else {
+        participantName = "anonymous";
+      }
+
+      webgazer.setRegression('ridge')
+        .saveDataAcrossSessions(true)
+        .setGazeListener(function(data, timestamp) {
+          if (data) {
+            latestGazeX = data.x;
+            latestGazeY = data.y;
+          }
+        })
+        .begin({ doVideo: true })
+        .then(() => {
+          console.log("Camera access granted.");
+          document.getElementById('startPage').style.display = 'none';
+          webgazer.showPredictionPoints(false);
+          showFaceCheckPage();
+        })
+        .catch(err => {
+          console.error("Camera access denied or error:", err);
+          alert("Camera permission is required to proceed.");
+        });
+    }
+
+    function showFaceCheckPage() {
+      const faceCheckPage = document.getElementById('faceCheckPage');
+      faceCheckPage.style.display = 'block';
+      webgazer.showVideo(true);
+      webgazer.showFaceOverlay(false);
+      webgazer.showFaceFeedbackBox(true);
+    }
+
+    function continueAfterFaceCheck() {
+      webgazer.showVideo(false);
+      webgazer.showPredictionPoints(false);
+      videoFaceVisible = false;
+      predictionsVisible = false;
+      document.getElementById('faceCheckPage').style.display = 'none';
+      showInstructionsPage();
+    }
+
+    // ----- Instructions Page -----
+    function showInstructionsPage() {
+      const instructionsPage = document.getElementById('instructionsPage');
+      instructionsPage.style.display = 'block';
+      instructionsPage.innerHTML = `
+        <h2>Instructions</h2>
+        <p>Please read these instructions carefully before proceeding.</p>
+        <ul>
+          <li>You will complete a series of Fitts law test clicks. In this test, red targets (circles) will appear on the screen and you must click them.</li>
+          <li>After every ${fittsClicksPerPhase} Fitts clicks, an <strong>aggressor trial</strong> will begin.</li>
+          <li>During an aggressor trial, an overlay will appear showing two cues:</li>
+          <ul>
+            <li>A <span style="color:red;">red square</span> (mouse cue) indicating where you should move your mouse pointer (do not click here).</li>
+            <li>A <span style="color:blue;">blue square</span> (gaze cue) indicating where you should direct your gaze.</li>
+          </ul>
+          <li>While keeping your mouse at the red square, please look at the blue square and click <strong>twice</strong> (even though the mouse remains at the red square). This is your “wrong” input.</li>
+          <li>This procedure will be repeated for 4 aggressor trials, interleaved with Fitts tests.</li>
+          <li>After all trials are complete, you may download your results.</li>
+        </ul>
+        <button onclick="startExperiment()">Next</button>
+      `;
+    }
+
+    // ----- Experiment Start and Fitts Test Setup -----
+    function startExperiment() {
+      if (experimentStarted) return;
+      experimentStarted = true;
+      // Hide instructions
+      document.getElementById('instructionsPage').style.display = 'none';
+      // Show Fitts test area and counter
+      document.getElementById('experimentArea').style.display = 'block';
+      document.getElementById('experimentCounter').style.display = 'block';
+      setupExperiment();
+    }
+
+    function setupExperiment() {
+      const experimentArea = document.getElementById("experimentArea");
+      experimentArea.innerHTML = "";
+      // Calculate positions for Fitts targets in a circle
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const radius = 256;
+      targetPositions = [...Array(11)].map((_, i) => {
+        const angle = (i / 11) * 2 * Math.PI;
+        return {
+          x: centerX + radius * Math.cos(angle) - 12,
+          y: centerY + radius * Math.sin(angle) - 12
         };
+      });
+      randomizedOrder = [...Array(targetPositions.length).keys()].sort(() => Math.random() - 0.5);
+      activeTargetIndex = 0;
+      // Reset Fitts clicks counter for this phase
+      currentFittsClicks = 0;
+      moveActiveTarget();
+      updateCounter();
+    }
 
-        // Step 1: request camera permission, then show face check page.
-        function requestCameraAccess() {
-            // Grab participant name
-            const nameInput = document.getElementById('participantName');
-            if (nameInput.value.trim() !== "") {
-                participantName = nameInput.value.trim().replace(/\s+/g, '_');
-            } else {
-                participantName = "anonymous";
-            }
+    function moveActiveTarget() {
+      // Remove any previous active targets
+      document.querySelectorAll(".target").forEach(target => {
+        target.classList.remove("active");
+        target.classList.add("inactive");
+      });
+      // Create target elements if not already created
+      const experimentArea = document.getElementById("experimentArea");
+      if (experimentArea.children.length === 0) {
+        targetPositions.forEach((pos, index) => {
+          const target = document.createElement("div");
+          target.className = "target inactive";
+          target.style.left = `${pos.x}px`;
+          target.style.top = `${pos.y}px`;
+          target.dataset.index = index;
+          experimentArea.appendChild(target);
+        });
+      }
+      // Activate next target based on randomized order
+      const newTarget = document.querySelector(`.target[data-index='${randomizedOrder[activeTargetIndex]}']`);
+      if (newTarget) {
+        newTarget.classList.remove("inactive");
+        newTarget.classList.add("active");
+        newTarget.onclick = (event) => recordFittsClick(event, randomizedOrder[activeTargetIndex]);
+      }
+    }
 
-            webgazer.setRegression('ridge')
-                .saveDataAcrossSessions(true)
-                .setGazeListener(function(data, timestamp) {
-                    if (data) {
-                        latestGazeX = data.x;
-                        latestGazeY = data.y;
-                    }
-                })
-                .begin({ doVideo: true })
-                .then(() => {
-                    console.log("Camera access granted.");
-                    // Once camera access is granted, hide start page.
-                    document.getElementById('startPage').style.display = 'none';
-                    webgazer.showPredictionPoints(true);
-                    // Show the face check page
-                    showFaceCheckPage();
-                })
-                .catch(err => {
-                    console.error("Camera access denied or error:", err);
-                    alert("Camera permission is required to proceed.");
-                });
+    function recordFittsClick(event, index) {
+      if (!experimentStarted || currentPhase !== "fitts") return;
+      const activeTarget = document.querySelector('.target.active');
+      if (!activeTarget) return;
+      const rect = activeTarget.getBoundingClientRect();
+      const targetCenterX = rect.left + rect.width / 2;
+      const targetCenterY = rect.top + rect.height / 2;
+      const distanceToTarget = calculateDistance(event.clientX, event.clientY, targetCenterX, targetCenterY);
+      if (distanceToTarget > 12) return;
+      const clickX = event.clientX;
+      const clickY = event.clientY;
+      if (latestGazeX !== null && latestGazeY !== null) {
+        const dist = calculateDistance(clickX, clickY, latestGazeX, latestGazeY);
+        results.push({
+          clickX, clickY,
+          gazeX: latestGazeX,
+          gazeY: latestGazeY,
+          distance: dist.toFixed(2),
+          targetIndex: index,
+          trialType: "fitts"
+        });
+      }
+      overallClickCount++;
+      currentFittsClicks++;
+      updateCounter();
+      // Check if it's time to start an aggressor trial:
+      if (currentFittsClicks >= fittsClicksPerPhase && aggressorTrialIndex < aggressorTrialsTotal) {
+        startAggressorTrial();
+        return;
+      }
+      // Otherwise, if overall clicks not reached, go to next Fitts target
+      if (overallClickCount < maxClicks) {
+        activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
+        moveActiveTarget();
+      } else {
+        finishExperiment();
+      }
+    }
+
+    // ----- Aggressor Trial Functions -----
+    function startAggressorTrial() {
+      // Switch phase and reset aggressor click count
+      currentPhase = "aggressor";
+      aggressorClickCount = 0;
+      // Hide the Fitts test area while showing aggressor cues
+      document.getElementById("experimentArea").style.display = "none";
+      // Get the cues for the current aggressor trial
+      const cues = getAggressorCues()[aggressorTrialIndex];
+      // Position the mouse cue (red square)
+      const mouseCueDiv = document.getElementById("mouseCue");
+      mouseCueDiv.style.left = `${cues.mouseCue.x - 15}px`;
+      mouseCueDiv.style.top = `${cues.mouseCue.y - 15}px`;
+      // Position the gaze cue (blue square)
+      const gazeCueDiv = document.getElementById("gazeCue");
+      gazeCueDiv.style.left = `${cues.gazeCue.x - 15}px`;
+      gazeCueDiv.style.top = `${cues.gazeCue.y - 15}px`;
+      // Set the on-screen instruction message
+      const message = document.getElementById("aggressorMessage");
+      message.innerText = "Aggressor Trial: Please move your mouse to the RED square (do not click) and, while keeping it there, look at the BLUE square and click TWICE.";
+      // Show the overlay
+      const overlay = document.getElementById("aggressorOverlay");
+      overlay.style.display = "flex";
+      // Optionally play a beep
+      const beep = document.getElementById("beepAudio");
+      if (beep) { beep.play(); }
+      // Attach a click listener for aggressor clicks
+      overlay.onclick = recordAggressorClick;
+    }
+
+    function recordAggressorClick(event) {
+      if (currentPhase !== "aggressor") return;
+      const clickX = event.clientX;
+      const clickY = event.clientY;
+      if (latestGazeX !== null && latestGazeY !== null) {
+        const dist = calculateDistance(clickX, clickY, latestGazeX, latestGazeY);
+        results.push({
+          clickX, clickY,
+          gazeX: latestGazeX,
+          gazeY: latestGazeY,
+          distance: dist.toFixed(2),
+          trialType: "aggressor",
+          aggressorTrial: aggressorTrialIndex + 1
+        });
+      }
+      overallClickCount++;
+      aggressorClickCount++;
+      updateCounter();
+      // Wait for two clicks
+      if (aggressorClickCount >= 2) {
+        // Remove the overlay and resume Fitts test
+        const overlay = document.getElementById("aggressorOverlay");
+        overlay.style.display = "none";
+        overlay.onclick = null;
+        // Increment aggressor trial counter and reset Fitts clicks counter for the new phase
+        aggressorTrialIndex++;
+        currentPhase = "fitts";
+        currentFittsClicks = 0;
+        // Show Fitts test area and move to the next target if experiment not finished
+        document.getElementById("experimentArea").style.display = "block";
+        if (overallClickCount < maxClicks) {
+          activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
+          moveActiveTarget();
+        } else {
+          finishExperiment();
         }
+      }
+    }
 
-        // Show Face Check Page
-        function showFaceCheckPage() {
-            const faceCheckPage = document.getElementById('faceCheckPage');
-            faceCheckPage.style.display = 'block';
-            // Ensure video and bounding box are visible; disable facial mesh
-            webgazer.showVideo(true);
-            webgazer.showFaceOverlay(false);
-            webgazer.showFaceFeedbackBox(true);
-        }
+    // ----- Utility Functions -----
+    function updateCounter() {
+      const counter = document.getElementById("experimentCounter");
+      counter.innerText = `Overall Clicks: ${overallClickCount} / ${maxClicks}`;
+    }
 
-        // Called when user clicks "Continue" on the face check page
-        function continueAfterFaceCheck() {
-            // Set default state for the experiment: turn video and predictions off.
-            webgazer.showVideo(false);
-            webgazer.showPredictionPoints(false);
-            videoFaceVisible = false;
-            predictionsVisible = false;
-            // Hide the face check page and proceed to instructions
-            document.getElementById('faceCheckPage').style.display = 'none';
-            showInstructionsPage();
-        }
+    function calculateDistance(x1, y1, x2, y2) {
+      return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
+    }
 
-        // ----------------------------
-        // Show Instructions Page (Updated for T4)
-        // ----------------------------
-        function showInstructionsPage() {
-            // Show the instructions page
-            const instructionsPage = document.getElementById('instructionsPage');
-            instructionsPage.style.display = 'block';
-            instructionsPage.innerHTML = `
-                <h2>Instructions</h2>
-                <p>Please read these instructions carefully before proceeding.</p>
-                <ul>
-                    <li>You will see multiple circles arranged in a circle.</li>
-                    <li>One circle will be red (active) while the others are grey.</li>
-                    <li>Click on the red circle until you have done so ${maxClicks} times.</li>
-                    <li><strong>T4 Modification:</strong> After the 10ᵗʰ click, you must turn your head to the right, and after the 25ᵗʰ click, turn your head to the left.</li>
-                    <li>At these times, the experiment will pause for 5 seconds so that only a cue is shown – please perform the head movement as indicated. A beep will sound as a cue.</li>
-                    <li>You may toggle video & face features or gaze predictions using the buttons in the top-right corner (if in debug mode).</li>
-                </ul>
-                <button onclick="startExperiment()">Next</button>
-            `;
-        }
+    function finishExperiment() {
+      document.getElementById("experimentCounter").innerText = "Experiment complete!";
+      document.getElementById("downloadButton").style.display = "inline";
+    }
 
-        // ----------------------------
-        // Starting the Experiment
-        // ----------------------------
-        function startExperiment() {
-            if (experimentStarted) return;
-            experimentStarted = true;
+    // ----- Toggle Functions for Debug -----
+    function toggleVideoFace() {
+      videoFaceVisible = !videoFaceVisible;
+      webgazer.showVideo(videoFaceVisible);
+      webgazer.showFaceOverlay(videoFaceVisible);
+      webgazer.showFaceFeedbackBox(videoFaceVisible);
+    }
 
-            document.getElementById('instructionsPage').style.display = 'none';
-            document.getElementById('experimentArea').style.display = 'block';
-            document.getElementById('experimentCounter').style.display = 'block';
+    function togglePredictions() {
+      predictionsVisible = !predictionsVisible;
+      webgazer.showPredictionPoints(predictionsVisible);
+    }
 
-            setupExperiment();
-        }
+    function downloadResults() {
+      const fileName = `T4_${participantName}.json`;
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
 
-        function setupExperiment() {
-            const experimentArea = document.getElementById("experimentArea");
-            experimentArea.innerHTML = "";
-
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const radius = 256;
-
-            targetPositions = [...Array(11)].map((_, i) => {
-                const angle = (i / 11) * 2 * Math.PI;
-                return {
-                    x: centerX + radius * Math.cos(angle) - 12,
-                    y: centerY + radius * Math.sin(angle) - 12
-                };
-            });
-
-            randomizedOrder = [...Array(targetPositions.length).keys()].sort(() => Math.random() - 0.5);
-            activeTargetIndex = 0;
-            clickCount = 0;
-
-            targetPositions.forEach((pos, index) => {
-                const target = document.createElement("div");
-                target.className = "target inactive";
-                target.style.left = `${pos.x}px`;
-                target.style.top = `${pos.y}px`;
-                target.dataset.index = index;
-                experimentArea.appendChild(target);
-            });
-
-            moveActiveTarget();
-            updateCounter();
-        }
-
-        function moveActiveTarget() {
-            document.querySelectorAll(".target").forEach(target => {
-                target.classList.remove("active");
-                target.classList.add("inactive");
-            });
-
-            const newTarget = document.querySelector(`.target[data-index='${randomizedOrder[activeTargetIndex]}']`);
-            if (newTarget) {
-                newTarget.classList.remove("inactive");
-                newTarget.classList.add("active");
-                newTarget.onclick = (event) => recordClick(event, randomizedOrder[activeTargetIndex]);
-            }
-        }
-
-        function recordClick(event, index) {
-            if (!experimentStarted) return;
-
-            const activeTarget = document.querySelector('.target.active');
-            if (!activeTarget) return;
-
-            const rect = activeTarget.getBoundingClientRect();
-            const targetCenterX = rect.left + rect.width / 2;
-            const targetCenterY = rect.top + rect.height / 2;
-            const distanceToTarget = calculateDistance(event.clientX, event.clientY, targetCenterX, targetCenterY);
-
-            if (distanceToTarget > 12) {
-                return;
-            }
-
-            const clickX = event.clientX;
-            const clickY = event.clientY;
-
-            if (latestGazeX !== null && latestGazeY !== null) {
-                const dist = calculateDistance(clickX, clickY, latestGazeX, latestGazeY);
-                results.push({
-                    clickX, clickY,
-                    gazeX: latestGazeX,
-                    gazeY: latestGazeY,
-                    distance: dist.toFixed(2),
-                    targetIndex: index
-                });
-            }
-
-            clickCount++;
-            updateCounter();
-
-            // If at click 10 or 25, pause the experiment with a head-turn cue.
-            if (clickCount === 10) {
-                pauseExperiment("Turn head right");
-                return;
-            }
-            if (clickCount === 25) {
-                pauseExperiment("Turn head left");
-                return;
-            }
-
-            if (clickCount < maxClicks) {
-                activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
-                moveActiveTarget();
-            } else {
-                document.getElementById("experimentCounter").innerText = "Experiment complete!";
-                document.getElementById("downloadButton").style.display = "inline";
-            }
-        }
-
-        function updateCounter() {
-            const counter = document.getElementById("experimentCounter");
-            counter.innerText = `${clickCount} / ${maxClicks} Clicks`;
-        }
-
-        function calculateDistance(x1, y1, x2, y2) {
-            return Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2);
-        }
-
-        // Pause experiment for 5 seconds with a message and sound cue.
-        // During the pause, the experiment area is hidden so that only the head-turn cue is visible.
-        function pauseExperiment(message) {
-            // Hide the experiment area so no targets or clicks are visible.
-            const experimentArea = document.getElementById("experimentArea");
-            experimentArea.style.display = "none";
-            const counter = document.getElementById("experimentCounter");
-            counter.style.display = "block";
-            counter.innerText = message;
-            // Play beep sound.
-            const beep = document.getElementById("beepAudio");
-            if (beep) {
-                beep.play();
-            }
-            // After 5 seconds, resume the experiment.
-            setTimeout(() => {
-                // Restore the experiment area.
-                experimentArea.style.display = "block";
-                updateCounter();
-                if (clickCount < maxClicks) {
-                    activeTargetIndex = (activeTargetIndex + 1) % targetPositions.length;
-                    moveActiveTarget();
-                }
-            }, 5000);
-        }
-
-        function toggleVideoFace() {
-            videoFaceVisible = !videoFaceVisible;
-            webgazer.showVideo(videoFaceVisible);
-            webgazer.showFaceOverlay(videoFaceVisible);
-            webgazer.showFaceFeedbackBox(videoFaceVisible);
-        }
-
-        function togglePredictions() {
-            predictionsVisible = !predictionsVisible;
-            webgazer.showPredictionPoints(predictionsVisible);
-        }
-
-        function downloadResults() {
-            const fileName = `fitts_law_experiment_results_${participantName}.json`;
-            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        }
-
-        console.log("Script loaded, waiting for user to consent...");
-    </script>
+    console.log("Script loaded, waiting for user to consent...");
+  </script>
 </body>
 </html>

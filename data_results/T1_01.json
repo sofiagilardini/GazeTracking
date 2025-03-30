@@ -1,0 +1,346 @@
+[
+  {
+    "identifier": "Q40_NO",
+    "clickX": 314,
+    "clickY": 136,
+    "gazeX": 215.32432743409908,
+    "gazeY": 157.15207562307526,
+    "distance": "100.92"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 314,
+    "clickY": 136,
+    "gazeX": 302.6741998645486,
+    "gazeY": 143.39906961107974,
+    "distance": "13.53"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 316,
+    "clickY": 194,
+    "gazeX": 432.39102540468986,
+    "gazeY": 238.7670490895943,
+    "distance": "124.70"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 315,
+    "clickY": 252,
+    "gazeX": 373.7494820742017,
+    "gazeY": 314.19726988689024,
+    "distance": "85.56"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 315,
+    "clickY": 252,
+    "gazeX": 601.9344437193355,
+    "gazeY": 482.7417323120822,
+    "distance": "368.20"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 316,
+    "clickY": 316,
+    "gazeX": 305.29287109669565,
+    "gazeY": 262.1131552118988,
+    "distance": "54.94"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 313,
+    "clickY": 369,
+    "gazeX": 651.3539998022338,
+    "gazeY": 474.78788150809737,
+    "distance": "354.51"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 67,
+    "clickY": 434,
+    "gazeX": 81.83232598824968,
+    "gazeY": 157.27850116799954,
+    "distance": "277.12"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 66,
+    "clickY": 490,
+    "gazeX": 239.27174854089444,
+    "gazeY": 384.40326325364333,
+    "distance": "202.91"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 64,
+    "clickY": 552,
+    "gazeX": 159.63613335759192,
+    "gazeY": 311.22687054636845,
+    "distance": "259.07"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 61,
+    "clickY": 603,
+    "gazeX": 267.33958381903875,
+    "gazeY": 356.99277071531526,
+    "distance": "321.09"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 68,
+    "clickY": 665,
+    "gazeX": 173.2188822755855,
+    "gazeY": 476.98977613396966,
+    "distance": "215.45"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 62,
+    "clickY": 727,
+    "gazeX": 109.28084854180861,
+    "gazeY": 546.3938380797879,
+    "distance": "186.69"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 63,
+    "clickY": 802,
+    "gazeX": 216.9148863863876,
+    "gazeY": 650.8355450586763,
+    "distance": "215.73"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 315,
+    "clickY": 860,
+    "gazeX": 305.6633777324415,
+    "gazeY": 600.0258671667642,
+    "distance": "260.14"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 862,
+    "clickY": 135,
+    "gazeX": 986.277430533481,
+    "gazeY": 100.13003206186514,
+    "distance": "129.08"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 863,
+    "clickY": 193,
+    "gazeX": 959.7662616942612,
+    "gazeY": 181.99814740446027,
+    "distance": "97.39"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 611,
+    "clickY": 258,
+    "gazeX": 660.6073330194143,
+    "gazeY": 265.4731421159709,
+    "distance": "50.17"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 860,
+    "clickY": 316,
+    "gazeX": 564.2091374307472,
+    "gazeY": 368.9748740815194,
+    "distance": "300.50"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 863,
+    "clickY": 371,
+    "gazeX": 728.5731008610518,
+    "gazeY": 286.91581912815366,
+    "distance": "158.56"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 860,
+    "clickY": 436,
+    "gazeX": 595.5939458342194,
+    "gazeY": 369.08872989221766,
+    "distance": "272.74"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 863,
+    "clickY": 487,
+    "gazeX": 719.931231935576,
+    "gazeY": 397.2477603661513,
+    "distance": "168.89"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 859,
+    "clickY": 548,
+    "gazeX": 742.4482449097839,
+    "gazeY": 423.7171883404805,
+    "distance": "170.38"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 858,
+    "clickY": 606,
+    "gazeX": 584.0132137680728,
+    "gazeY": 523.7910486284006,
+    "distance": "286.05"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 861,
+    "clickY": 668,
+    "gazeX": 791.346632717734,
+    "gazeY": 585.9581200269129,
+    "distance": "107.62"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 616,
+    "clickY": 742,
+    "gazeX": 605.214475009397,
+    "gazeY": 593.3596640369616,
+    "distance": "149.03"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 862,
+    "clickY": 808,
+    "gazeX": 712.6820823357053,
+    "gazeY": 596.082357844506,
+    "distance": "259.24"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 859,
+    "clickY": 860,
+    "gazeX": 674.4397535302968,
+    "gazeY": 647.4112661191272,
+    "distance": "281.53"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 65,
+    "clickY": 727,
+    "gazeX": 134.86742054417743,
+    "gazeY": 564.3588486858889,
+    "distance": "177.01"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1406,
+    "clickY": 102,
+    "gazeX": 1095.9575871154752,
+    "gazeY": 218.9689127229128,
+    "distance": "331.37"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1406,
+    "clickY": 157,
+    "gazeX": 1160.7854967334208,
+    "gazeY": 237.03746873805517,
+    "distance": "257.95"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1410,
+    "clickY": 214,
+    "gazeX": 1151.1321989744647,
+    "gazeY": 243.80547761060112,
+    "distance": "260.58"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1410,
+    "clickY": 280,
+    "gazeX": 1076.7848487966564,
+    "gazeY": 346.10632203692035,
+    "distance": "339.71"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1407,
+    "clickY": 336,
+    "gazeX": 844.8667869319463,
+    "gazeY": 318.39018513659454,
+    "distance": "562.41"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1407,
+    "clickY": 394,
+    "gazeX": 1221.8000109989139,
+    "gazeY": 353.73717086968105,
+    "distance": "189.53"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 1158,
+    "clickY": 457,
+    "gazeX": 1099.8904179188835,
+    "gazeY": 419.36726287078415,
+    "distance": "69.23"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1406,
+    "clickY": 509,
+    "gazeX": 1010.7681487745757,
+    "gazeY": 252.06558218520976,
+    "distance": "471.41"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1406,
+    "clickY": 509,
+    "gazeX": 558.3365286835344,
+    "gazeY": 51.17251006598939,
+    "distance": "963.40"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1407,
+    "clickY": 569,
+    "gazeX": 1303.6634672893558,
+    "gazeY": 435.7619388033032,
+    "distance": "168.61"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 1161,
+    "clickY": 630,
+    "gazeX": 1003.1488127202934,
+    "gazeY": 528.5907192566756,
+    "distance": "187.62"
+  },
+  {
+    "identifier": "Q40_NO",
+    "clickX": 1405,
+    "clickY": 692,
+    "gazeX": 1226.8377931378384,
+    "gazeY": 568.1244728758965,
+    "distance": "217.00"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 1155,
+    "clickY": 765,
+    "gazeX": 1104.0847919620273,
+    "gazeY": 626.8261645725793,
+    "distance": "147.26"
+  },
+  {
+    "identifier": "Q40_YES",
+    "clickX": 1160,
+    "clickY": 823,
+    "gazeX": 1082.1559436832658,
+    "gazeY": 686.7902263392582,
+    "distance": "156.88"
+  }
+]

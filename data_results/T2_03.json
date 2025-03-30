@@ -1,0 +1,322 @@
+[
+  {
+    "clickX": 1115,
+    "clickY": 441,
+    "gazeX": 726.5251003074227,
+    "gazeY": 339.3994396459472,
+    "distance": "401.54",
+    "targetIndex": 0
+  },
+  {
+    "clickX": 618,
+    "clickY": 505,
+    "gazeX": 854.0471144947011,
+    "gazeY": 479.39844758378626,
+    "distance": "237.43",
+    "targetIndex": 5
+  },
+  {
+    "clickX": 967,
+    "clickY": 206,
+    "gazeX": 845.1750037440514,
+    "gazeY": 387.3916053267595,
+    "distance": "218.50",
+    "targetIndex": 9
+  },
+  {
+    "clickX": 824,
+    "clickY": 685,
+    "gazeX": 807.0076875911836,
+    "gazeY": 400.09733510200255,
+    "distance": "285.41",
+    "targetIndex": 3
+  },
+  {
+    "clickX": 696,
+    "clickY": 254,
+    "gazeX": 844.2494168904202,
+    "gazeY": 385.99615535932264,
+    "distance": "198.50",
+    "targetIndex": 7
+  },
+  {
+    "clickX": 1082,
+    "clickY": 575,
+    "gazeX": 753.8277607160439,
+    "gazeY": 411.84429866491513,
+    "distance": "366.49",
+    "targetIndex": 1
+  },
+  {
+    "clickX": 972,
+    "clickY": 670,
+    "gazeX": 814.4928222657591,
+    "gazeY": 475.5269578946261,
+    "distance": "250.26",
+    "targetIndex": 2
+  },
+  {
+    "clickX": 830,
+    "clickY": 178,
+    "gazeX": 854.5537283161789,
+    "gazeY": 398.85679659968935,
+    "distance": "222.22",
+    "targetIndex": 8
+  },
+  {
+    "clickX": 696,
+    "clickY": 631,
+    "gazeX": 808.6246140415101,
+    "gazeY": 447.5680584223577,
+    "distance": "215.25",
+    "targetIndex": 4
+  },
+  {
+    "clickX": 623,
+    "clickY": 366,
+    "gazeX": 790.3324904291838,
+    "gazeY": 458.5324977906264,
+    "distance": "191.21",
+    "targetIndex": 6
+  },
+  {
+    "clickX": 1079,
+    "clickY": 293,
+    "gazeX": 879.5941972113965,
+    "gazeY": 394.1243347343705,
+    "distance": "223.58",
+    "targetIndex": 10
+  },
+  {
+    "clickX": 1121,
+    "clickY": 442,
+    "gazeX": 927.1004952051507,
+    "gazeY": 505.0584635982415,
+    "distance": "203.90",
+    "targetIndex": 0
+  },
+  {
+    "clickX": 612,
+    "clickY": 512,
+    "gazeX": 743.018037609735,
+    "gazeY": 477.1803238413547,
+    "distance": "135.57",
+    "targetIndex": 5
+  },
+  {
+    "clickX": 976,
+    "clickY": 212,
+    "gazeX": 857.2093418403922,
+    "gazeY": 348.0691730667627,
+    "distance": "180.63",
+    "targetIndex": 9
+  },
+  {
+    "clickX": 821,
+    "clickY": 688,
+    "gazeX": 1028.728374197677,
+    "gazeY": 390.1509631785203,
+    "distance": "363.13",
+    "targetIndex": 3
+  },
+  {
+    "clickX": 696,
+    "clickY": 238,
+    "gazeX": 867.4755799297653,
+    "gazeY": 474.8232957517526,
+    "distance": "292.39",
+    "targetIndex": 7
+  },
+  {
+    "clickX": 1080,
+    "clickY": 578,
+    "gazeX": 945.3400203252224,
+    "gazeY": 452.39318596142004,
+    "distance": "184.15",
+    "targetIndex": 1
+  },
+  {
+    "clickX": 973,
+    "clickY": 672,
+    "gazeX": 1001.337132066161,
+    "gazeY": 520.0851904026205,
+    "distance": "154.54",
+    "targetIndex": 2
+  },
+  {
+    "clickX": 829,
+    "clickY": 177,
+    "gazeX": 950.7415295683684,
+    "gazeY": 496.5496192979157,
+    "distance": "341.95",
+    "targetIndex": 8
+  },
+  {
+    "clickX": 706,
+    "clickY": 626,
+    "gazeX": 717.2620370125564,
+    "gazeY": 387.73638272510493,
+    "distance": "238.53",
+    "targetIndex": 4
+  },
+  {
+    "clickX": 614,
+    "clickY": 361,
+    "gazeX": 677.0701471532842,
+    "gazeY": 447.419351686485,
+    "distance": "106.99",
+    "targetIndex": 6
+  },
+  {
+    "clickX": 1082,
+    "clickY": 298,
+    "gazeX": 807.7823928836603,
+    "gazeY": 315.0655899088455,
+    "distance": "274.75",
+    "targetIndex": 10
+  },
+  {
+    "clickX": 1127,
+    "clickY": 432,
+    "gazeX": 929.1809117217467,
+    "gazeY": 376.84548173887464,
+    "distance": "205.36",
+    "targetIndex": 0
+  },
+  {
+    "clickX": 613,
+    "clickY": 509,
+    "gazeX": 810.963869190306,
+    "gazeY": 485.89074590426776,
+    "distance": "199.31",
+    "targetIndex": 5
+  },
+  {
+    "clickX": 967,
+    "clickY": 212,
+    "gazeX": 792.8797880005563,
+    "gazeY": 297.4662578475848,
+    "distance": "193.96",
+    "targetIndex": 9
+  },
+  {
+    "clickX": 833,
+    "clickY": 685,
+    "gazeX": 859.4756334271648,
+    "gazeY": 391.22835318895676,
+    "distance": "294.96",
+    "targetIndex": 3
+  },
+  {
+    "clickX": 700,
+    "clickY": 236,
+    "gazeX": 829.159904840675,
+    "gazeY": 479.3212163511079,
+    "distance": "275.48",
+    "targetIndex": 7
+  },
+  {
+    "clickX": 1088,
+    "clickY": 572,
+    "gazeX": 827.2610154050614,
+    "gazeY": 464.215037278457,
+    "distance": "282.14",
+    "targetIndex": 1
+  },
+  {
+    "clickX": 966,
+    "clickY": 669,
+    "gazeX": 864.3477796666111,
+    "gazeY": 469.9318409084241,
+    "distance": "223.52",
+    "targetIndex": 2
+  },
+  {
+    "clickX": 824,
+    "clickY": 174,
+    "gazeX": 861.5620870795174,
+    "gazeY": 327.74599542181346,
+    "distance": "158.27",
+    "targetIndex": 8
+  },
+  {
+    "clickX": 693,
+    "clickY": 625,
+    "gazeX": 760.1773223442162,
+    "gazeY": 394.22242081345814,
+    "distance": "240.36",
+    "targetIndex": 4
+  },
+  {
+    "clickX": 619,
+    "clickY": 360,
+    "gazeX": 677.2420603516872,
+    "gazeY": 407.5089905998691,
+    "distance": "75.16",
+    "targetIndex": 6
+  },
+  {
+    "clickX": 1080,
+    "clickY": 300,
+    "gazeX": 869.4909807246146,
+    "gazeY": 335.20988152014326,
+    "distance": "213.43",
+    "targetIndex": 10
+  },
+  {
+    "clickX": 1129,
+    "clickY": 440,
+    "gazeX": 868.4942473845173,
+    "gazeY": 353.4359908199796,
+    "distance": "274.51",
+    "targetIndex": 0
+  },
+  {
+    "clickX": 614,
+    "clickY": 507,
+    "gazeX": 754.1812636750808,
+    "gazeY": 391.76423242988875,
+    "distance": "181.47",
+    "targetIndex": 5
+  },
+  {
+    "clickX": 970,
+    "clickY": 205,
+    "gazeX": 804.3257796555628,
+    "gazeY": 294.44642242371077,
+    "distance": "188.28",
+    "targetIndex": 9
+  },
+  {
+    "clickX": 823,
+    "clickY": 696,
+    "gazeX": 910.1778638994261,
+    "gazeY": 500.12026430218197,
+    "distance": "214.40",
+    "targetIndex": 3
+  },
+  {
+    "clickX": 695,
+    "clickY": 241,
+    "gazeX": 829.6085469519317,
+    "gazeY": 296.2052882765064,
+    "distance": "145.49",
+    "targetIndex": 7
+  },
+  {
+    "clickX": 1085,
+    "clickY": 572,
+    "gazeX": 870.8909596018569,
+    "gazeY": 373.47780773960625,
+    "distance": "291.98",
+    "targetIndex": 1
+  },
+  {
+    "clickX": 966,
+    "clickY": 679,
+    "gazeX": 915.6427821425417,
+    "gazeY": 560.3577712691288,
+    "distance": "128.89",
+    "targetIndex": 2
+  }
+]

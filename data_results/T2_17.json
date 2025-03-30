@@ -1,0 +1,50 @@
+[
+  {
+    "clickX": 713,
+    "clickY": 172,
+    "gazeX": 928.4273577537008,
+    "gazeY": 305.7917661500944,
+    "distance": "253.59",
+    "targetIndex": 8
+  },
+  {
+    "clickX": 596,
+    "clickY": 233,
+    "gazeX": 416.0588265361754,
+    "gazeY": 319.70157464783625,
+    "distance": "199.74",
+    "targetIndex": 7
+  },
+  {
+    "clickX": 510,
+    "clickY": 353,
+    "gazeX": 564.2363477388817,
+    "gazeY": 362.29721836359806,
+    "distance": "55.03",
+    "targetIndex": 6
+  },
+  {
+    "clickX": 506,
+    "clickY": 496,
+    "gazeX": 556.1362508187918,
+    "gazeY": 372.4825013741874,
+    "distance": "133.30",
+    "targetIndex": 5
+  },
+  {
+    "clickX": 591,
+    "clickY": 623,
+    "gazeX": 674.4882182458689,
+    "gazeY": 681.1598695546828,
+    "distance": "101.75",
+    "targetIndex": 4
+  },
+  {
+    "clickX": 587,
+    "clickY": 621,
+    "gazeX": 475.2751232504541,
+    "gazeY": 483.05012392003306,
+    "distance": "177.52",
+    "targetIndex": 4
+  }
+]

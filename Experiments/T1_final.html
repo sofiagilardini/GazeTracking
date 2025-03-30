@@ -187,6 +187,10 @@
       margin-bottom: 4px;
     }
 
+    .questionBlock label {
+  margin-right: 200px; /* Add space between "Yes" and "No" */
+    }
+
     /* Save button to appear at the end of the questionnaire */
     #saveButton {
       display: inline-block;
@@ -222,8 +226,8 @@
       Please ensure you are in a well-lit area and that your face is visible to the camera.
       After consenting, you will see a set of instructions followed by a yes/no questionnaire.
     </p>
-    <label for="participantName">Please enter your name:</label>
-    <input type="text" id="participantName" placeholder="John Doe" />
+    <label for="participantName">Please enter your participant ID:</label>
+    <input type="text" id="participantName" placeholder="ID_01" />
     <button onclick="requestCameraAccess()">I Consent</button>
   </div>
 
@@ -289,7 +293,7 @@
       "Have you ever stayed up late even though you were tired, just to avoid missing out?",
       "Do you believe breakfast is the most important meal of the day?",
       "Would you rather watch a movie alone than with friends sometimes?",
-      "Do you believe 'once a cheater, always a cheater'?",
+      "Is your favourite colour blue?",
       "Have you ever wanted to learn a totally random skill for no reason?",
       "Do you find rainy days more relaxing than sunny days?",
       "Would you rather read an e-book than a physical book?",
@@ -461,7 +465,7 @@
 
     // Download results
     function downloadResults() {
-      const fileName = `questionnaire_experiment_results_${participantName}.json`;
+      const fileName = `T1_${participantName}.json`;
       const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');

@@ -229,8 +229,8 @@
         <p>
             Please ensure you are in a well-lit area and that your face is visible to the camera.
         </p>
-        <label for="participantName">Please enter your name:</label>
-        <input type="text" id="participantName" placeholder="John Doe" />
+        <label for="participantName">Please enter your participant ID:</label>
+        <input type="text" id="participantName" placeholder="ID_01" />
         <button onclick="requestCameraAccess()">I Consent</button>
     </div>
 
@@ -301,7 +301,7 @@
                     console.log("Camera access granted.");
                     // Once camera access is granted, hide start page.
                     document.getElementById('startPage').style.display = 'none';
-                    webgazer.showPredictionPoints(true);
+                    webgazer.showPredictionPoints(false);
                     // Show the face check page
                     showFaceCheckPage();
                 })
@@ -317,16 +317,16 @@
             faceCheckPage.style.display = 'block';
             // Ensure video and bounding box are visible; disable facial mesh
             webgazer.showVideo(true);
-            webgazer.showFaceOverlay(false);
+            webgazer.showFaceOverlay(true);
             webgazer.showFaceFeedbackBox(true);
         }
 
         // Called when user clicks "Continue" on the face check page
         function continueAfterFaceCheck() {
             // Set default state for the experiment: turn video and predictions off.
-            webgazer.showVideo(false);
+            webgazer.showVideo(true);
             webgazer.showPredictionPoints(false);
-            videoFaceVisible = false;
+            videoFaceVisible = true;
             predictionsVisible = false;
             // Hide the face check page and proceed to instructions
             document.getElementById('faceCheckPage').style.display = 'none';
@@ -477,7 +477,7 @@
         }
 
         function downloadResults() {
-            const fileName = `fitts_law_experiment_results_${participantName}.json`;
+            const fileName = `T2_${participantName}.json`;
             const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
